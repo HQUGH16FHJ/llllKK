@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>后台管理 · 刘琪硕</title>
+  <link rel="icon" href="assets/images/avatar.jpg">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+  <section class="login-view" id="login-view">
+    <form class="login-card" id="login-form">
+      <img src="assets/images/avatar.jpg" alt="">
+      <p>LOCAL ADMIN</p>
+      <h1>后台管理</h1>
+      <label><span>管理密码</span><input id="password" type="password" required></label>
+      <p class="login-error" id="login-error"></p>
+      <button class="button button--primary" type="submit">登录</button>
+      <a href="index.html">返回网站</a>
+    </form>
+  </section>
+
+  <div class="admin-app" id="admin-app" hidden>
+    <header class="admin-header">
+      <a href="index.html"><img src="assets/images/avatar.jpg" alt=""><span><strong>刘琪硕</strong><small>STATIC ADMIN</small></span></a>
+      <div>
+        <span id="save-status">本地模式</span>
+        <button class="button button--secondary" id="export-button" type="button">导出 site.json</button>
+        <label class="button button--secondary" for="import-input">导入 site.json</label>
+        <input id="import-input" type="file" accept="application/json" hidden>
+        <button class="button button--primary" id="save-button" type="button">保存到浏览器</button>
+        <button class="button button--secondary" id="logout-button" type="button">退出</button>
+      </div>
+    </header>
+
+    <div class="admin-shell">
+      <aside class="admin-nav" id="admin-nav">
+        <button class="active" data-tab="profile">个人资料</button>
+        <button data-tab="photos">照片</button>
+        <button data-tab="projects">作品</button>
+        <button data-tab="posts">文章</button>
+        <button data-tab="music">音乐</button>
+      </aside>
+
+      <main class="admin-main">
+        <section class="admin-panel active" data-panel="profile">
+          <h1>个人资料</h1>
+          <form class="editor-form" id="profile-form"></form>
+        </section>
+        <section class="admin-panel" data-panel="photos">
+          <header><h1>照片</h1><button class="button button--primary" id="add-photo" type="button">添加照片</button></header>
+          <div class="admin-list" id="photos-list"></div>
+        </section>
+        <section class="admin-panel" data-panel="projects">
+          <header><h1>作品</h1><button class="button button--primary" id="add-project" type="button">添加作品</button></header>
+          <div class="admin-list" id="projects-list"></div>
+        </section>
+        <section class="admin-panel" data-panel="posts">
+          <header><h1>文章</h1><button class="button button--primary" id="add-post" type="button">新建文章</button></header>
+          <div class="admin-list" id="posts-list"></div>
+        </section>
+        <section class="admin-panel" data-panel="music">
+          <header><h1>音乐</h1><button class="button button--primary" id="add-music" type="button">添加音乐</button></header>
+          <div class="admin-list" id="music-list"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="admin.js"></script>
+</body>
+</html>
