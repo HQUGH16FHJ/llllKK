@@ -1,0 +1,558 @@
+/* 登录页 */
+.admin-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg-primary);
+  position: relative;
+}
+
+.admin-login::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 30% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+}
+
+.admin-login__card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  text-align: center;
+}
+
+.admin-login__card h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.admin-login__card > p {
+  color: var(--text-tertiary);
+  margin-bottom: 32px;
+  font-size: 0.9rem;
+}
+
+.admin-login__input {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin-bottom: 16px;
+  transition: all var(--transition-fast);
+}
+
+.admin-login__input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.admin-login__error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.admin-login__btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.admin-login__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px var(--glow-primary);
+}
+
+.admin-login__hint {
+  margin-top: 16px !important;
+  font-size: 0.8rem !important;
+  color: var(--text-muted) !important;
+}
+
+.admin-login__back {
+  margin-top: 24px;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color var(--transition-fast);
+}
+
+.admin-login__back:hover {
+  color: var(--accent-primary);
+}
+
+/* 后台管理布局 */
+.admin {
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg-primary);
+}
+
+.admin__sidebar {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  flex-shrink: 0;
+}
+
+.admin__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0 12px 24px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.admin__logo span:first-child {
+  color: var(--accent-primary);
+}
+
+.admin__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.admin__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 10px;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.admin__nav-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.admin__nav-item.active {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent-primary);
+}
+
+.admin__sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.admin__btn-secondary,
+.admin__btn-logout {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  border: none;
+}
+
+.admin__btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+}
+
+.admin__btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.admin__btn-logout {
+  background: none;
+  color: var(--text-tertiary);
+}
+
+.admin__btn-logout:hover {
+  color: #ef4444;
+}
+
+/* 主内容区 */
+.admin__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.admin__header h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.admin__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin__save-status {
+  color: #22c55e;
+  font-size: 0.85rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.admin__btn-save,
+.admin__btn-reset {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.admin__btn-save {
+  background: var(--accent-gradient);
+  color: white;
+}
+
+.admin__btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--glow-primary);
+}
+
+.admin__btn-reset {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.admin__btn-reset:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.admin__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+.admin__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.admin__section-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.admin__btn-add {
+  padding: 10px 20px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: var(--accent-primary);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.admin__btn-add:hover {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+/* 表单 */
+.admin__form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.admin__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin__form-group--full {
+  grid-column: span 2;
+}
+
+.admin__form-group label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.admin__form-group input,
+.admin__form-group textarea {
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.admin__form-group input:focus,
+.admin__form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.admin__form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* 列表项 */
+.admin__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin__list-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  align-items: flex-start;
+}
+
+.admin__list-item--large {
+  flex-direction: column;
+}
+
+.admin__list-thumb {
+  width: 120px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+}
+
+.admin__list-thumb--square {
+  width: 80px;
+  height: 80px;
+}
+
+.admin__list-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin__list-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.admin__list-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin__list-title {
+  font-size: 1rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  padding: 4px 0;
+  width: 100%;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.admin__list-title:focus {
+  outline: none;
+  border-bottom-color: var(--accent-primary);
+}
+
+.admin__list-fields {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin__list-fields input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.admin__list-fields input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.admin__list-info textarea {
+  padding: 10px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.admin__list-info textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.admin__list-url {
+  font-size: 0.8rem !important;
+  color: var(--text-tertiary) !important;
+}
+
+.admin__btn-delete {
+  padding: 8px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.admin__btn-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .admin {
+    flex-direction: column;
+  }
+
+  .admin__sidebar {
+    width: 100%;
+    flex-direction: row;
+    padding: 12px 16px;
+    gap: 16px;
+    overflow-x: auto;
+  }
+
+  .admin__logo {
+    padding: 0;
+    border-bottom: none;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .admin__nav {
+    flex-direction: row;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .admin__nav-item {
+    flex-shrink: 0;
+  }
+
+  .admin__sidebar-bottom {
+    flex-direction: row;
+    padding-top: 0;
+    border-top: none;
+    flex-shrink: 0;
+  }
+
+  .admin__header {
+    padding: 16px 20px;
+  }
+
+  .admin__content {
+    padding: 20px;
+  }
+
+  .admin__form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin__form-group--full {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin__list-item {
+    flex-direction: column;
+  }
+
+  .admin__list-thumb {
+    width: 100%;
+    height: 160px;
+  }
+
+  .admin__btn-delete {
+    align-self: stretch;
+  }
+}

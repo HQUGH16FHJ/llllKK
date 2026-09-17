@@ -1,0 +1,96 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.logo:hover {
+  transform: translateY(-1px);
+}
+
+.logo__mark {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.logo__svg {
+  width: 36px;
+  height: 36px;
+  position: relative;
+  z-index: 1;
+}
+
+.logo__glow {
+  position: absolute;
+  inset: -6px;
+  background: var(--accent-gradient);
+  filter: blur(12px);
+  opacity: 0.3;
+  border-radius: 50%;
+  animation: logo-glow 3s ease-in-out infinite;
+}
+
+@keyframes logo-glow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo__name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo__subtitle {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* 尺寸变体 */
+.logo--sm .logo__svg {
+  width: 28px;
+  height: 28px;
+}
+
+.logo--sm .logo__name {
+  font-size: 1rem;
+}
+
+.logo--sm .logo__subtitle {
+  display: none;
+}
+
+.logo--lg .logo__svg {
+  width: 60px;
+  height: 60px;
+}
+
+.logo--lg .logo__name {
+  font-size: 2rem;
+}
+
+.logo--lg .logo__subtitle {
+  font-size: 0.75rem;
+  margin-top: 4px;
+}

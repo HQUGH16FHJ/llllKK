@@ -1,0 +1,23 @@
+{
+  "name": "qiji-blog",
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2024-09-01",
+
+  "vars": {
+    "ADMIN_PASSWORD": "admin123"
+  },
+
+  "kv_namespaces": [
+    {
+      "binding": "SITE_DATA",
+      "id": "",
+      "preview_id": ""
+    }
+  ],
+
+  "routes": [],
+
+  "build": {
+    "command": "npm run build"
+  }
+}
