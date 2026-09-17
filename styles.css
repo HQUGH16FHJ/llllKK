@@ -123,14 +123,14 @@ video {
   background-image: url("./assets/background.jpg");
   background-size: cover;
   background-position: center;
-  opacity: 0.48;
+  opacity: 0.74;
   transform: scale(1.02);
 }
 
 .site-background__veil {
   background:
-    linear-gradient(90deg, rgb(8 12 11 / 88%) 0%, rgb(8 12 11 / 58%) 52%, rgb(8 12 11 / 78%) 100%),
-    linear-gradient(180deg, rgb(8 12 11 / 28%) 0%, rgb(8 12 11 / 35%) 44%, rgb(8 12 11 / 88%) 100%);
+    linear-gradient(90deg, rgb(8 12 11 / 70%) 0%, rgb(8 12 11 / 34%) 52%, rgb(8 12 11 / 62%) 100%),
+    linear-gradient(180deg, rgb(8 12 11 / 10%) 0%, rgb(8 12 11 / 18%) 44%, rgb(8 12 11 / 76%) 100%);
 }
 
 .site-background__grain {
