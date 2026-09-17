@@ -115,6 +115,7 @@ const copyEmailStatus = document.querySelector(".copy-email__status");
 const backgroundImage = document.querySelector(".site-background__image");
 const musicDock = document.querySelector("#music-dock");
 const musicToggle = document.querySelector("#music-toggle");
+const musicCollapse = document.querySelector("#music-collapse");
 const musicState = document.querySelector("#music-state");
 const musicCurrent = document.querySelector("#music-current");
 const musicDuration = document.querySelector("#music-duration");
@@ -552,6 +553,21 @@ const revealObserver = new IntersectionObserver(
 
 document.querySelectorAll(".reveal").forEach((element) => {
   revealObserver.observe(element);
+});
+
+const compactMusic = window.matchMedia("(max-width: 1024px)").matches;
+musicDock.classList.toggle("is-collapsed", compactMusic);
+musicCollapse.setAttribute(
+  "aria-label",
+  compactMusic ? "展开音乐播放器" : "折叠音乐播放器",
+);
+
+musicCollapse.addEventListener("click", () => {
+  const isCollapsed = musicDock.classList.toggle("is-collapsed");
+  musicCollapse.setAttribute(
+    "aria-label",
+    isCollapsed ? "展开音乐播放器" : "折叠音乐播放器",
+  );
 });
 
 syncCloudContent();
