@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>内容管理后台</title>
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <a class="admin-brand" href="./index.html">
+        <span>LQ</span>
+        <div>
+          <strong>内容管理</strong>
+          <small>CONTENT MANAGER</small>
+        </div>
+      </a>
+
+      <div class="admin-header__status">
+        <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+        <span id="status-text">正在连接站点数据</span>
+      </div>
+
+      <div class="admin-header__actions">
+        <a class="button button--ghost" href="./index.html" target="_blank" rel="noreferrer">
+          预览网站
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6" />
+            <path d="M10 14 21 3" />
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          </svg>
+        </a>
+        <button class="button button--ghost" id="download-content" type="button">
+          下载备份
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v12" />
+            <path d="m7 10 5 5 5-5" />
+            <path d="M5 21h14" />
+          </svg>
+        </button>
+        <button class="button button--primary" id="save-content" type="button">
+          保存到网站
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+            <path d="M17 21v-8H7v8" />
+            <path d="M7 3v5h8" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <nav aria-label="后台导航">
+          <button class="is-active" type="button" data-tab="profile">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21a8 8 0 0 0-16 0" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            基本资料
+          </button>
+          <button type="button" data-tab="articles">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+              <path d="M14 2v6h6" />
+              <path d="M8 13h8" />
+              <path d="M8 17h6" />
+            </svg>
+            文章管理
+          </button>
+          <button type="button" data-tab="photos">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <circle cx="9" cy="9" r="2" />
+              <path d="m21 15-5-5L5 21" />
+            </svg>
+            照片管理
+          </button>
+          <button type="button" data-tab="assets">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3-9 5 9 5 9-5-9-5Z" />
+              <path d="m3 12 9 5 9-5" />
+              <path d="m3 16 9 5 9-5" />
+            </svg>
+            站点素材
+          </button>
+        </nav>
+
+        <div class="admin-sidebar__security">
+          <label for="admin-token">管理密钥</label>
+          <input id="admin-token" type="password" autocomplete="off" placeholder="Cloudflare 保存时需要" />
+          <p>本地保存无需填写；云端部署时填写 Pages 环境变量里的管理密钥。</p>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <section class="admin-section is-active" data-panel="profile">
+          <div class="section-title">
+            <div>
+              <p>PROFILE</p>
+              <h1>基本资料</h1>
+            </div>
+            <span>保存后会同步到网站首屏、关于区和页脚</span>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              <span>姓名</span>
+              <input type="text" data-field="name" />
+            </label>
+            <label>
+              <span>身份</span>
+              <input type="text" data-field="role" />
+            </label>
+            <label>
+              <span>常驻城市</span>
+              <input type="text" data-field="location" />
+            </label>
+            <label>
+              <span>当前状态</span>
+              <input type="text" data-field="status" />
+            </label>
+            <label>
+              <span>邮箱</span>
+              <input type="email" data-field="email" />
+            </label>
+            <label>
+              <span>当前在做</span>
+              <input type="text" data-field="current" />
+            </label>
+            <label>
+              <span>长期关注</span>
+              <input type="text" data-field="focus" />
+            </label>
+            <label>
+              <span>最近阅读</span>
+              <input type="text" data-field="reading" />
+            </label>
+            <label class="form-grid__wide">
+              <span>个人短句</span>
+              <input type="text" data-field="statement" />
+            </label>
+            <label class="form-grid__wide">
+              <span>关于我</span>
+              <textarea rows="6" data-field="about"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="admin-section" data-panel="articles">
+          <div class="section-title">
+            <div>
+              <p>ARTICLES</p>
+              <h1>文章管理</h1>
+            </div>
+            <button class="button button--primary" id="add-article" type="button">
+              新增文章
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="editor-list" id="article-list"></div>
+        </section>
+
+        <section class="admin-section" data-panel="photos">
+          <div class="section-title">
+            <div>
+              <p>PHOTOS</p>
+              <h1>照片管理</h1>
+            </div>
+            <button class="button button--primary" id="add-photo" type="button">
+              新增照片
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="photo-editor" id="photo-list"></div>
+        </section>
+
+        <section class="admin-section" data-panel="assets">
+          <div class="section-title">
+            <div>
+              <p>MEDIA</p>
+              <h1>站点素材</h1>
+            </div>
+            <span>图片会自动压缩，单个文件上限为 12MB</span>
+          </div>
+
+          <div class="asset-list">
+            <article class="asset-row">
+              <div class="asset-row__copy">
+                <strong>背景图</strong>
+                <span>建议横向 2400 × 1500 或更大</span>
+              </div>
+              <div class="asset-row__preview" data-preview="background"></div>
+              <input type="file" accept="image/*" data-asset-upload="background" />
+            </article>
+            <article class="asset-row">
+              <div class="asset-row__copy">
+                <strong>头像</strong>
+                <span>建议正方形 1200 × 1200</span>
+              </div>
+              <div class="asset-row__preview" data-preview="avatar"></div>
+              <input type="file" accept="image/*" data-asset-upload="avatar" />
+            </article>
+            <article class="asset-row">
+              <div class="asset-row__copy">
+                <strong>视频封面</strong>
+                <span>建议横向 1920 × 1080</span>
+              </div>
+              <div class="asset-row__preview" data-preview="poster"></div>
+              <input type="file" accept="image/*" data-asset-upload="poster" />
+            </article>
+            <article class="asset-row">
+              <div class="asset-row__copy">
+                <strong>视频</strong>
+                <span>MP4 或 WebM，建议不超过 12MB</span>
+              </div>
+              <div class="asset-row__preview asset-row__preview--file" data-preview="video">VIDEO</div>
+              <input type="file" accept="video/mp4,video/webm" data-asset-upload="video" />
+            </article>
+            <article class="asset-row">
+              <div class="asset-row__copy">
+                <strong>音乐</strong>
+                <span>MP3，建议不超过 12MB</span>
+              </div>
+              <div class="asset-row__preview asset-row__preview--file" data-preview="music">AUDIO</div>
+              <input type="file" accept="audio/mpeg,audio/mp4" data-asset-upload="music" />
+            </article>
+          </div>
+
+          <div class="music-fields">
+            <label>
+              <span>音乐标题</span>
+              <input type="text" data-music-field="title" />
+            </label>
+            <label>
+              <span>音乐作者</span>
+              <input type="text" data-music-field="artist" />
+            </label>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
+
+    <script src="./admin.js"></script>
+  </body>
+</html>
