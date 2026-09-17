@@ -1,0 +1,11 @@
+{
+  "name": "qiji-blog",
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2024-09-01",
+
+  "routes": [],
+
+  "build": {
+    "command": "npm run build"
+  }
+}

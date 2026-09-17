@@ -1,0 +1,94 @@
+.app {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* 加载状态 */
+.app--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-spinner__circle {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner p {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 页面包装器 */
+.page-wrapper {
+  padding-top: 120px;
+  min-height: 100vh;
+}
+
+.page-header {
+  text-align: center;
+  padding: 60px 0 40px;
+}
+
+.page-header .section-subtitle {
+  margin: 0 auto;
+}
+
+/* 文章详情页额外样式 */
+.post-detail__content h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 40px 0 20px;
+}
+
+.post-detail__content p {
+  margin-bottom: 20px;
+}
+
+.post-detail__content blockquote {
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 20px;
+  margin: 30px 0;
+  font-style: italic;
+  color: var(--text-primary);
+  background: rgba(99, 102, 241, 0.05);
+  padding: 20px;
+  border-radius: 0 12px 12px 0;
+}
+
+.post-detail__content ul {
+  margin: 20px 0;
+  padding-left: 24px;
+}
+
+.post-detail__content li {
+  margin-bottom: 10px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding-top: 80px;
+  }
+
+  .page-header {
+    padding: 40px 0 30px;
+  }
+}
