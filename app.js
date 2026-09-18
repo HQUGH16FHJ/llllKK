@@ -69,6 +69,7 @@ const articleHoverImage = articleHoverPreview?.querySelector("img");
 const articleHoverLabel = articleHoverPreview?.querySelector("span");
 const timeline = document.querySelector("#timeline");
 const depthCarouselHost = document.querySelector("#depth-carousel");
+const photoFilters = document.querySelector("#photo-filters");
 const heroRoleType = document.querySelector("#hero-role-type");
 const video = document.querySelector("#intro-video");
 const videoShell = document.querySelector("[data-video-shell]");
@@ -84,6 +85,7 @@ const musicCurrent = document.querySelector("#music-current");
 const musicDuration = document.querySelector("#music-duration");
 const musicProgress = document.querySelector("#music-progress");
 const audio = document.querySelector("#site-audio");
+const musicBars = document.querySelector("#music-bars");
 const articleReader = document.querySelector("#article-reader");
 const articleReaderDate = document.querySelector("#article-reader-date");
 const articleReaderTitle = document.querySelector("#article-reader-title");
@@ -102,6 +104,7 @@ const lightboxNext = document.querySelector("#lightbox-next");
 let currentArticleIndex = -1;
 let currentPhotoIndex = -1;
 let currentFeaturedPhoto = null;
+let activePhotoFilter = "all";
 let pointerStartX = null;
 let depthCarouselInstance = null;
 let roleTyper = null;
@@ -112,6 +115,11 @@ let musicHistory = [];
 let musicPlaybackFailures = 0;
 let musicTracksSignature = "";
 let musicAutoplayArmed = false;
+let audioContext = null;
+let analyser = null;
+let analyserData = null;
+let visualizerFrame = null;
+let visualizerSource = null;
 
 const currentYear = new Date().getFullYear();
 document.querySelector("#footer-year").textContent = currentYear;
@@ -120,6 +128,15 @@ function setText(selector, value) {
   document.querySelectorAll(selector).forEach((node) => {
     node.textContent = value || "";
   });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function absoluteAsset(path, fallback) {
@@ -434,11 +451,15 @@ function renderAll() {
   renderArticles();
   renderTimeline();
   renderRoleType();
+  renderPhotoFilters();
   renderDepthCarousel();
+  setupMediaDevelopment();
+  setupScrollTextHighlight();
   splitText(heroTitle);
   splitText(featuredTitle);
   setupTextReveals();
   observeReveals();
+  updateScrollTextHighlight();
 }
 
 function renderRoleType() {
@@ -447,8 +468,9 @@ function renderRoleType() {
   }
 
   const texts = [
-    siteConfig.role,
-    siteConfig.status,
+    "健身爱好者",
+    "大学生",
+    "记录者",
     siteConfig.focus,
   ].filter(Boolean);
 
@@ -471,12 +493,50 @@ function renderRoleType() {
   });
 }
 
+function getPhotoGroup(photo) {
+  return photo.group?.trim() || photo.date?.trim() || "未分组";
+}
+
+function getVisiblePhotos() {
+  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
+  if (activePhotoFilter === "all") {
+    return photos;
+  }
+  return photos.filter((photo) => getPhotoGroup(photo) === activePhotoFilter);
+}
+
+function renderPhotoFilters() {
+  if (!photoFilters) {
+    return;
+  }
+
+  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
+  const groups = [...new Set(photos.map(getPhotoGroup))].filter(Boolean);
+  if (!groups.includes(activePhotoFilter) && activePhotoFilter !== "all") {
+    activePhotoFilter = "all";
+  }
+
+  const filters = [
+    { value: "all", label: "全部" },
+    ...groups.map((group) => ({ value: group, label: group })),
+  ];
+  photoFilters.innerHTML = filters
+    .map(
+      (filter) => `
+        <button class="photo-filter${activePhotoFilter === filter.value ? " is-active" : ""}" type="button" data-photo-filter="${escapeHtml(filter.value)}">
+          ${escapeHtml(filter.label)}
+        </button>
+      `,
+    )
+    .join("");
+}
+
 function renderDepthCarousel() {
   if (!depthCarouselHost || typeof window.DepthCarousel !== "function") {
     return;
   }
 
-  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
+  const photos = getVisiblePhotos();
   depthCarouselInstance?.destroy();
 
   if (!photos.length) {
@@ -509,6 +569,7 @@ function renderDepthCarousel() {
       alt: photo.alt || photo.caption || `照片 ${index + 1}`,
       caption: photo.caption || "",
       date: photo.date || "",
+      photo,
     })),
     cardWidth,
     cardHeight,
@@ -523,7 +584,7 @@ function renderDepthCarousel() {
     blur: 6,
     autoplay: true,
     loop: true,
-    onSelect: (index) => openLightbox(index),
+    onSelect: (_index, item) => openLightboxPhoto(item.photo),
   });
 }
 
@@ -533,7 +594,19 @@ window.addEventListener("resize", () => {
   window.clearTimeout(carouselResizeTimer);
   carouselResizeTimer = window.setTimeout(() => {
     renderDepthCarousel();
+    setupMediaDevelopment();
   }, 180);
+});
+
+photoFilters?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-photo-filter]");
+  if (!button) {
+    return;
+  }
+  activePhotoFilter = button.dataset.photoFilter;
+  renderPhotoFilters();
+  renderDepthCarousel();
+  setupMediaDevelopment();
 });
 
 function setupTextReveals() {
@@ -634,6 +707,67 @@ function setupTextReveals() {
         "--text-delay",
         `${Math.min((index % 7) * 45, 190)}ms`,
       );
+    });
+  });
+}
+
+function setupMediaDevelopment() {
+  const images = document.querySelectorAll(
+    ".hero__visual-frame img, .featured__preview img, .depth-carousel__img, .article-reader__media img, .video-stage video",
+  );
+
+  images.forEach((media) => {
+    if (media.dataset.developReady === "true") {
+      return;
+    }
+    media.dataset.developReady = "true";
+    media.classList.add("media-develop");
+    const revealMedia = () => {
+      window.requestAnimationFrame(() => media.classList.add("is-developed"));
+    };
+    if (media.tagName === "IMG" && !media.complete) {
+      media.addEventListener("load", revealMedia, { once: true });
+      media.addEventListener("error", revealMedia, { once: true });
+    } else {
+      revealMedia();
+    }
+  });
+}
+
+function setupScrollTextHighlight() {
+  document
+    .querySelectorAll(".about__statement blockquote, .film__copy h2")
+    .forEach((element) => {
+      if (element.dataset.inkReady === "true") {
+        return;
+      }
+      const text = element.textContent;
+      element.replaceChildren(
+        ...[...text].map((character) => {
+          const span = document.createElement("span");
+          span.className = "scroll-ink-char";
+          span.textContent = character === " " ? "\u00a0" : character;
+          return span;
+        }),
+      );
+      element.dataset.inkReady = "true";
+      element.classList.add("scroll-ink");
+    });
+}
+
+function updateScrollTextHighlight() {
+  document.querySelectorAll(".scroll-ink").forEach((element) => {
+    const rect = element.getBoundingClientRect();
+    const start = window.innerHeight * 0.82;
+    const end = window.innerHeight * 0.28;
+    const progress = Math.min(
+      1,
+      Math.max(0, (start - rect.top) / Math.max(rect.height + start - end, 1)),
+    );
+    const characters = element.querySelectorAll(".scroll-ink-char");
+    const litCount = Math.round(characters.length * progress);
+    characters.forEach((character, index) => {
+      character.classList.toggle("is-lit", index < litCount);
     });
   });
 }
@@ -759,6 +893,9 @@ function showLightboxPhoto(photo, index = -1) {
   const total = siteConfig.photos?.length || 0;
 
   currentPhotoIndex = index;
+  lightbox.classList.toggle("is-wide", photo.layout === "wide");
+  lightbox.classList.toggle("is-tall", photo.layout === "tall");
+  lightbox.classList.toggle("is-full", photo.layout === "full");
   lightboxImage.onerror = () => {
     if (
       fallbackPath !== photo.path &&
@@ -961,6 +1098,8 @@ function setupNavigation() {
     if (atPageEnd) {
       activeSection = sections[sections.length - 1];
     }
+
+    document.documentElement.dataset.activeSection = activeSection?.id || "home";
 
     navLinks.forEach((link) => {
       link.classList.toggle(
@@ -1404,15 +1543,70 @@ musicVolume.addEventListener("input", () => {
   localStorage.setItem("siteMusicVolume", String(audio.volume));
 });
 
+function startMusicVisualizer() {
+  if (!musicBars) {
+    return;
+  }
+
+  if (!audioContext) {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      audioContext = new AudioContextClass();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.82;
+      analyserData = new Uint8Array(analyser.frequencyBinCount);
+      visualizerSource = audioContext.createMediaElementSource(audio);
+      visualizerSource.connect(analyser);
+      analyser.connect(audioContext.destination);
+    } catch {
+      musicBars.classList.add("is-fallback");
+    }
+  }
+
+  musicBars.classList.add("is-active");
+  audioContext?.resume?.();
+  if (!analyser || visualizerFrame) {
+    return;
+  }
+
+  const draw = () => {
+    if (audio.paused) {
+      return;
+    }
+    analyser.getByteFrequencyData(analyserData);
+    [...musicBars.children].forEach((bar, index) => {
+      const value = analyserData[index * 2] || analyserData[index] || 0;
+      bar.style.transform = `scaleY(${0.22 + (value / 255) * 1.55})`;
+    });
+    visualizerFrame = window.requestAnimationFrame(draw);
+  };
+
+  draw();
+}
+
+function stopMusicVisualizer() {
+  if (visualizerFrame) {
+    window.cancelAnimationFrame(visualizerFrame);
+    visualizerFrame = null;
+  }
+  musicBars?.classList.remove("is-active");
+  musicBars?.querySelectorAll("i").forEach((bar) => {
+    bar.style.transform = "";
+  });
+}
+
 audio.addEventListener("play", () => {
   musicPlaybackFailures = 0;
   musicDock.classList.add("is-playing");
   musicState.textContent = "随机播放";
+  startMusicVisualizer();
 });
 
 audio.addEventListener("pause", () => {
   musicDock.classList.remove("is-playing");
   musicState.textContent = "已暂停";
+  stopMusicVisualizer();
 });
 
 audio.addEventListener("loadedmetadata", () => {
@@ -1477,6 +1671,10 @@ window.addEventListener(
         "--ambient-shift",
         `${Math.min(scrollY * 0.035, 30)}px`,
       );
+      document.documentElement.style.setProperty(
+        "--page-progress",
+        `${progress * 360}deg`,
+      );
 
       if (heroVisual && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         heroVisual.style.transform = `translate3d(0, ${Math.min(
@@ -1485,6 +1683,7 @@ window.addEventListener(
         )}px, 0)`;
       }
       revealVisibleText();
+      updateScrollTextHighlight();
       ticking = false;
     });
   },
