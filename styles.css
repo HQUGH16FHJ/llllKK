@@ -2805,7 +2805,35 @@ body.is-loaded .ambient__image {
 }
 
 .footer-admin-link {
-  background: rgb(255 248 231 / 22%);
+  display: inline-flex;
+  width: auto;
+  height: auto;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid rgb(255 248 231 / 18%);
+  border-radius: 999px;
+  color: rgb(255 248 231 / 68%);
+  background: rgb(255 248 231 / 6%);
+  font-size: 0.68rem;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-admin-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.footer-admin-link:hover {
+  border-color: var(--accent);
+  color: #fff8e7;
+  background: var(--accent);
+  transform: translateY(-2px);
 }
 
 .article-reader {
