@@ -2278,17 +2278,17 @@ main,
 }
 
 :root {
-  --warm-canvas: #f5e4ad;
-  --warm-canvas-deep: #e9cf8b;
-  --warm-surface: #fff7de;
-  --warm-surface-strong: #efd99b;
-  --warm-text: #3f2d1e;
-  --warm-muted: #745d43;
-  --warm-faint: rgb(74 53 34 / 62%);
-  --warm-line: rgb(87 57 31 / 18%);
-  --warm-line-strong: rgb(87 57 31 / 36%);
-  --accent: #bd642f;
-  --accent-soft: #dd955d;
+  --warm-canvas: #e9e0cf;
+  --warm-canvas-deep: #d4c4aa;
+  --warm-surface: #fbf6ec;
+  --warm-surface-strong: #dfd0b8;
+  --warm-text: #322920;
+  --warm-muted: #6d6153;
+  --warm-faint: rgb(63 50 37 / 62%);
+  --warm-line: rgb(76 58 40 / 18%);
+  --warm-line-strong: rgb(76 58 40 / 35%);
+  --accent: #ad5834;
+  --accent-soft: #c9835e;
 }
 
 html {
@@ -2313,8 +2313,8 @@ body {
 .ambient {
   z-index: 0;
   background:
-    radial-gradient(circle at 82% 10%, rgb(255 248 220 / 94%), transparent 36%),
-    linear-gradient(145deg, #f8e9b9, var(--warm-canvas-deep) 52%, #f9edc9);
+    radial-gradient(circle at 82% 10%, rgb(252 248 238 / 94%), transparent 36%),
+    linear-gradient(145deg, #f2eadc, var(--warm-canvas-deep) 52%, #f5eee3);
 }
 
 .ambient__image {
@@ -2328,16 +2328,16 @@ body {
   background:
     linear-gradient(
       90deg,
-      rgb(255 241 200 / 88%) 0%,
-      rgb(255 245 211 / 70%) 42%,
-      rgb(255 247 222 / 30%) 72%,
-      rgb(255 239 194 / 76%) 100%
+      rgb(247 241 229 / 90%) 0%,
+      rgb(247 242 232 / 72%) 42%,
+      rgb(251 247 239 / 34%) 72%,
+      rgb(238 226 207 / 78%) 100%
     ),
     linear-gradient(
       180deg,
-      rgb(255 248 224 / 24%) 0%,
-      rgb(255 246 214 / 18%) 52%,
-      rgb(247 224 165 / 84%) 100%
+      rgb(251 247 238 / 26%) 0%,
+      rgb(249 244 235 / 20%) 52%,
+      rgb(224 210 188 / 84%) 100%
     );
 }
 
@@ -2362,7 +2362,7 @@ body.is-loaded .ambient__image {
 
 .page-loader {
   color: var(--warm-surface);
-  background: #3a271a;
+  background: #35291f;
 }
 
 .site-header {
@@ -2379,6 +2379,70 @@ body.is-loaded .ambient__image {
 .site-brand > span,
 .footer__brand > span {
   border-color: var(--warm-line-strong);
+}
+
+.site-brand > span.brand-mark,
+.footer__brand > span.brand-mark {
+  position: relative;
+  display: block;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border: 1px solid rgb(173 88 52 / 34%);
+  border-radius: 15px 15px 15px 5px;
+  color: var(--warm-text);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 72%), transparent 45%),
+    linear-gradient(145deg, #f7f1e7, #d9c6a9);
+  box-shadow:
+    0 12px 28px rgb(83 57 34 / 14%),
+    inset 0 0 0 1px rgb(255 255 255 / 42%);
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 260ms ease,
+    border-color 260ms ease;
+}
+
+.site-brand > span.brand-mark::before,
+.footer__brand > span.brand-mark::before {
+  position: absolute;
+  top: -19px;
+  right: -16px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgb(173 88 52 / 28%);
+  border-radius: 50%;
+  content: "";
+}
+
+.brand-mark i {
+  position: absolute;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brand-mark i:first-child {
+  top: 8px;
+  left: 9px;
+  font-size: 1rem;
+}
+
+.brand-mark i:last-child {
+  right: 8px;
+  bottom: 7px;
+  color: var(--accent);
+  font-size: 0.72rem;
+}
+
+.site-brand:hover .brand-mark,
+.footer__brand:hover .brand-mark {
+  border-color: var(--accent);
+  box-shadow:
+    0 16px 34px rgb(83 57 34 / 18%),
+    inset 0 0 0 1px rgb(255 255 255 / 52%);
+  transform: rotate(-3deg) translateY(-2px);
 }
 
 .site-brand small,
@@ -2457,7 +2521,7 @@ body.is-loaded .ambient__image {
 
 .hero__visual-frame {
   border-color: var(--warm-line-strong);
-  background: #dfbd72;
+  background: #cdb48d;
   box-shadow: 0 24px 64px rgb(105 65 28 / 18%);
 }
 
@@ -2486,14 +2550,14 @@ body.is-loaded .ambient__image {
 .action-link {
   border-color: var(--warm-line-strong);
   color: var(--warm-text);
-  background: rgb(255 248 222 / 56%);
+  background: rgb(250 245 236 / 58%);
   box-shadow: 0 10px 26px rgb(96 59 29 / 8%);
 }
 
 .action-link:hover {
   border-color: var(--accent);
   color: var(--warm-text);
-  background: rgb(189 100 47 / 12%);
+  background: rgb(173 88 52 / 12%);
 }
 
 .action-link--solid {
@@ -2508,7 +2572,7 @@ body.is-loaded .ambient__image {
 }
 
 .featured {
-  background: rgb(255 247 222 / 94%);
+  background: rgb(251 247 238 / 94%);
 }
 
 .section-line,
@@ -2554,11 +2618,11 @@ body.is-loaded .ambient__image {
 }
 
 .journal {
-  background: rgb(249 235 194 / 92%);
+  background: rgb(242 235 223 / 92%);
 }
 
 .stills {
-  background: #efda9f;
+  background: #e6dcc9;
 }
 
 .article-index,
@@ -2601,7 +2665,7 @@ body.is-loaded .ambient__image {
 }
 
 .film {
-  background: rgb(255 247 222 / 92%);
+  background: rgb(251 247 238 / 92%);
 }
 
 .video-stage {
@@ -2622,7 +2686,7 @@ body.is-loaded .ambient__image {
 
 .about {
   border-color: var(--warm-line);
-  background: #ecd393;
+  background: #e5d8c2;
 }
 
 .about__statement > p,
@@ -2641,7 +2705,7 @@ body.is-loaded .ambient__image {
 .music-dock {
   border-color: var(--warm-line-strong);
   color: var(--warm-text);
-  background: rgb(255 248 222 / 90%);
+  background: rgb(251 247 238 / 92%);
   box-shadow: 0 20px 54px rgb(87 53 25 / 18%);
 }
 
