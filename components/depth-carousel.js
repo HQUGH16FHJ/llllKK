@@ -131,12 +131,18 @@ class DepthCarousel {
     this.resizeObserver.observe(this.element);
 
     this.element.addEventListener("pointerdown", (event) => {
+      if (
+        event.target.closest(
+          ".depth-carousel__arrow, .depth-carousel__dot",
+        )
+      ) {
+        return;
+      }
       this.drag = {
         x: event.clientX,
         start: this.position,
         moved: false,
       };
-      this.element.setPointerCapture(event.pointerId);
     });
 
     this.element.addEventListener("pointermove", (event) => {
