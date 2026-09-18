@@ -359,16 +359,21 @@ function openLightbox(index) {
     ?.closest(".photo")
     ?.querySelector("img");
   const fallbackPath = photo.path.replace("/photos/", "/");
+  const cardLoaded = (cardImage?.naturalWidth || 0) > 0;
+  const primarySource = cardLoaded
+    ? cardImage.currentSrc || cardImage.src
+    : fallbackPath;
+  const secondarySource = cardLoaded ? fallbackPath : photo.path;
 
   currentPhotoIndex = index;
   lightboxImage.onerror = () => {
-    if (fallbackPath !== photo.path && lightboxImage.dataset.fallbackUsed !== "true") {
+    if (secondarySource !== primarySource && lightboxImage.dataset.fallbackUsed !== "true") {
       lightboxImage.dataset.fallbackUsed = "true";
-      lightboxImage.src = fallbackPath;
+      lightboxImage.src = secondarySource;
     }
   };
   lightboxImage.dataset.fallbackUsed = "";
-  lightboxImage.src = cardImage?.currentSrc || cardImage?.src || photo.path;
+  lightboxImage.src = primarySource;
   lightboxImage.alt = photo.alt || photo.caption || `照片 ${index + 1}`;
   lightboxDate.textContent = photo.date || "";
   lightboxTitle.textContent = photo.caption || "未命名照片";
