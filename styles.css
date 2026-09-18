@@ -3450,6 +3450,252 @@ body.is-section-switching .ambient::after {
   }
 }
 
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  z-index: 120;
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: #fff8e7;
+  background: var(--accent);
+  transform: translate(-50%, -180%);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skip-link:focus {
+  transform: translate(-50%, 0);
+}
+
+.hero {
+  grid-template-columns: minmax(0, 1.16fr) minmax(320px, 0.54fr);
+  gap: clamp(52px, 8vw, 150px);
+  min-height: max(100svh, 760px);
+  align-items: center;
+  padding-top: calc(var(--header-height) + 72px);
+  padding-bottom: 96px;
+}
+
+.hero__copy {
+  max-width: 930px;
+}
+
+.hero-title {
+  max-width: 8.6em;
+  font-family: "Iowan Old Style", "Baskerville", "Songti SC", "STSong",
+    "SimSun", serif;
+  font-size: clamp(4.8rem, 11.5vw, 10.5rem);
+  font-weight: 600;
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.hero__intro {
+  max-width: 62ch;
+  line-height: 2.05;
+  text-wrap: pretty;
+}
+
+.hero__visual {
+  padding: 9px;
+  border: 1px solid rgb(76 58 40 / 14%);
+  border-radius: 28px;
+  background: rgb(251 247 238 / 38%);
+  box-shadow:
+    0 28px 80px rgb(83 57 34 / 14%),
+    inset 0 0 0 1px rgb(255 255 255 / 42%);
+}
+
+.hero__visual-frame {
+  border-radius: 20px;
+}
+
+.hero__visual-frame::before {
+  border-radius: inherit;
+}
+
+.hero__profile {
+  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  border: 1px solid rgb(255 248 231 / 12%);
+  border-radius: 14px;
+}
+
+.hero__visual-note {
+  padding: 0 8px;
+}
+
+.featured,
+.journal,
+.stills,
+.film,
+.about {
+  padding-top: clamp(124px, 12vw, 196px);
+  padding-bottom: clamp(132px, 13vw, 210px);
+}
+
+.featured__article {
+  grid-template-columns: 118px minmax(0, 1fr) minmax(300px, 0.48fr);
+  gap: clamp(34px, 5.5vw, 94px);
+}
+
+.featured__copy h2 {
+  max-width: 10em;
+  font-family: "Iowan Old Style", "Baskerville", "Songti SC", "STSong",
+    "SimSun", serif;
+  font-size: clamp(3.2rem, 7.8vw, 7rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.featured__preview {
+  border-radius: 22px;
+  box-shadow:
+    0 24px 68px rgb(98 61 28 / 18%),
+    inset 0 0 0 1px rgb(255 255 255 / 28%);
+}
+
+.article-row {
+  min-height: 154px;
+  padding-top: 38px;
+  padding-bottom: 38px;
+  grid-template-columns: 92px minmax(0, 1fr) minmax(150px, 0.25fr) 52px;
+}
+
+.article-row__title h3 {
+  font-family: "Iowan Old Style", "Baskerville", "Songti SC", "STSong",
+    "SimSun", serif;
+  font-size: clamp(1.8rem, 3.3vw, 3rem);
+  text-wrap: balance;
+}
+
+.depth-carousel-host {
+  min-height: 620px;
+}
+
+.about__statement {
+  position: sticky;
+  top: calc(var(--header-height) + 38px);
+  align-self: start;
+}
+
+.about__statement blockquote {
+  text-wrap: balance;
+}
+
+.about__details {
+  padding-top: 16px;
+}
+
+.footer {
+  padding-top: 72px;
+  padding-bottom: 46px;
+}
+
+.footer__brand strong {
+  font-family: "Iowan Old Style", "Baskerville", "Songti SC", "STSong",
+    "SimSun", serif;
+  font-size: 1.55rem;
+}
+
+.footer__top,
+.footer__bottom {
+  max-width: 1180px;
+}
+
+.featured__meta time,
+.article-row time,
+.timeline__item time,
+.lightbox__caption span,
+.lightbox__caption p {
+  font-variant-numeric: tabular-nums;
+}
+
+img {
+  content-visibility: auto;
+}
+
+@media (max-width: 1100px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(290px, 0.62fr);
+  }
+
+  .featured__article {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .featured__preview {
+    grid-column: 2;
+  }
+
+  .about__statement {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding-top: calc(var(--header-height) + 46px);
+  }
+
+  .hero-title {
+    font-size: clamp(3.6rem, 19vw, 5.8rem);
+  }
+
+  .hero__visual {
+    width: 100%;
+    border-radius: 22px;
+  }
+
+  .featured,
+  .journal,
+  .stills,
+  .film,
+  .about {
+    padding-top: 92px;
+    padding-bottom: 104px;
+  }
+
+  .featured__article {
+    grid-template-columns: 1fr;
+  }
+
+  .featured__preview {
+    grid-column: auto;
+    border-radius: 18px;
+  }
+
+  .featured__copy h2 {
+    font-size: clamp(2.7rem, 13vw, 4.2rem);
+  }
+
+  .article-row {
+    grid-template-columns: 1fr 44px;
+    min-height: 0;
+    padding-top: 28px;
+    padding-bottom: 28px;
+  }
+
+  .article-row time,
+  .article-row__title,
+  .article-row__tag {
+    grid-column: 1;
+  }
+
+  .article-row__arrow {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+
+  .depth-carousel-host {
+    min-height: 450px;
+  }
+}
+
 @media (pointer: coarse), (max-width: 900px) {
   .pointer-glow {
     display: none;
