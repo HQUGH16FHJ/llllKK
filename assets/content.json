@@ -9,8 +9,11 @@
   "current": "一件需要慢慢完成的作品",
   "focus": "记录、设计与日常观察",
   "reading": "一本关于城市与人的书",
+  "heroPhotoIndex": 0,
+  "featuredArticleIndex": 0,
   "assets": {
     "background": "https://llllkk.online/media/media/1789685571996-danking.jpg",
+    "backgroundVideo": "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260723_145606_ab143199-b593-4941-bb1b-9afca215416b.mp4",
     "avatar": "https://llllkk.online/media/media/1789685664052-7a983acdc606d65ad4d1d285d51af9cd.jpg",
     "video": "https://llllkk.online/assets/intro.mp4",
     "poster": "https://llllkk.online/assets/video-poster.jpg",
