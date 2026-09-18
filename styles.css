@@ -1948,11 +1948,12 @@ main,
   }
 
   .hero__visual {
+    order: -1;
     width: 100%;
   }
 
   .hero__visual-frame {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 4 / 3;
   }
 
   .featured,
