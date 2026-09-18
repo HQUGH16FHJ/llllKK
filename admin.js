@@ -511,7 +511,12 @@ function renderPhotos() {
                 <option value="wide" ${photo.layout === "wide" ? "selected" : ""}>横向大图</option>
                 <option value="standard" ${photo.layout === "standard" ? "selected" : ""}>标准比例</option>
                 <option value="tall" ${photo.layout === "tall" ? "selected" : ""}>竖向照片</option>
+                <option value="full" ${photo.layout === "full" ? "selected" : ""}>全屏照片</option>
               </select>
+            </label>
+            <label>
+              <span>相册或主题</span>
+              <input type="text" value="${escapeHtml(photo.group || "")}" data-photo-index="${index}" data-photo-prop="group" placeholder="例如 健身、旅行、2026" />
             </label>
             <div class="photo-editor__upload">
               <span>${escapeHtml(photo.path.split("/").pop())}</span>
