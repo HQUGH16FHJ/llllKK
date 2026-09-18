@@ -18,6 +18,8 @@ const statusText = document.querySelector("#status-text");
 const toast = document.querySelector("#admin-toast");
 const tokenInput = document.querySelector("#admin-token");
 const verifyTokenButton = document.querySelector("#verify-token");
+const cleanupMediaButton = document.querySelector("#cleanup-media");
+const storageCleanupStatus = document.querySelector("#storage-cleanup-status");
 
 let content = null;
 let serverMode = "unknown";
@@ -43,6 +45,70 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function normalizeMediaPath(value) {
+  if (typeof value !== "string" || !value.includes("/media/")) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value, location.origin);
+    return /^\/media\/.+/.test(url.pathname) ? url.pathname : null;
+  } catch {
+    return null;
+  }
+}
+
+function collectMediaPaths(value, result = new Set()) {
+  if (typeof value === "string") {
+    const mediaPath = normalizeMediaPath(value);
+    if (mediaPath) {
+      result.add(mediaPath);
+    }
+    return result;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectMediaPaths(item, result));
+    return result;
+  }
+
+  if (value && typeof value === "object") {
+    Object.values(value).forEach((item) => collectMediaPaths(item, result));
+  }
+
+  return result;
+}
+
+async function deleteUnusedMediaPaths(paths) {
+  const referenced = collectMediaPaths(content);
+  const mediaPaths = [
+    ...new Set(paths.map(normalizeMediaPath).filter(Boolean)),
+  ].filter((path) => !referenced.has(path));
+
+  if (!mediaPaths.length) {
+    return 0;
+  }
+
+  const result = await requestJson("/api/delete-media", {
+    method: "POST",
+    body: JSON.stringify({ paths: mediaPaths }),
+  });
+  return result.deleted || 0;
+}
+
+async function deleteUnusedMediaAfterSave(paths) {
+  try {
+    const deleted = await deleteUnusedMediaPaths(paths);
+    if (deleted) {
+      showToast(`已释放 ${deleted} 个云端文件`, "success");
+    }
+    return deleted;
+  } catch (error) {
+    showToast(`记录已删除，但文件清理失败：${error.message}`, "error");
+    return 0;
+  }
 }
 
 function resolveArticleImage(article) {
@@ -548,9 +614,11 @@ async function saveContent() {
     dirty = false;
     setStatus(serverMode === "cloudflare" ? "已保存到 Cloudflare" : "已保存到本地项目", "ready");
     showToast("内容已保存，刷新网站即可看到", "success");
+    return true;
   } catch (error) {
     setStatus("保存失败", "error");
     showToast(error.message, "error");
+    return false;
   } finally {
     saveButton.disabled = false;
   }
@@ -691,7 +759,7 @@ document.addEventListener("input", (event) => {
   }
 });
 
-trackList.addEventListener("click", (event) => {
+trackList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-track-action]");
   if (!button || !content) {
     return;
@@ -702,9 +770,13 @@ trackList.addEventListener("click", (event) => {
   } else if (button.dataset.trackAction === "down") {
     moveItem(content.music.tracks, index, 1);
   } else if (button.dataset.trackAction === "delete" && window.confirm("确定删除这首音乐吗？")) {
+    const removedTrack = content.music.tracks[index];
     content.music.tracks.splice(index, 1);
     markDirty();
     renderAll();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([removedTrack?.path]);
+    }
   }
 });
 
@@ -726,7 +798,7 @@ timelineList.addEventListener("click", (event) => {
   }
 });
 
-articleList.addEventListener("click", (event) => {
+articleList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-article-action]");
   if (!button || !content) {
     return;
@@ -738,6 +810,7 @@ articleList.addEventListener("click", (event) => {
   } else if (button.dataset.articleAction === "down") {
     moveItem(content.articles, index, 1);
   } else if (button.dataset.articleAction === "delete" && window.confirm("确定删除这篇文章吗？")) {
+    const removedArticle = content.articles[index];
     content.articles.splice(index, 1);
     content.featuredArticleIndex = Math.min(
       Math.max(content.featuredArticleIndex, 0),
@@ -745,13 +818,21 @@ articleList.addEventListener("click", (event) => {
     );
     markDirty();
     renderAll();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([removedArticle?.coverImage]);
+    }
   } else if (button.dataset.articleAction === "upload-image") {
     document.querySelector(`[data-article-image-upload="${index}"]`)?.click();
   } else if (button.dataset.articleAction === "clear-image") {
-    content.articles[index].coverPhotoId = "none";
-    content.articles[index].coverImage = "";
+    const article = content.articles[index];
+    const previousImage = article.coverImage;
+    article.coverPhotoId = "none";
+    article.coverImage = "";
     markDirty();
     renderAll();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([previousImage]);
+    }
   }
 });
 
@@ -764,11 +845,15 @@ articleList.addEventListener("change", async (event) => {
     if (coverSelect.value === "__uploaded__") {
       return;
     }
+    const previousImage = article.coverImage;
     article.coverPhotoId =
       coverSelect.value === "__auto__" ? "" : coverSelect.value;
     article.coverImage = "";
     markDirty();
     renderAll();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([previousImage]);
+    }
     return;
   }
 
@@ -783,6 +868,7 @@ articleList.addEventListener("change", async (event) => {
 
   try {
     const file = uploadInput.files[0];
+    const previousImage = article.coverImage;
     const result = await uploadFile(file, {
       kind: "image",
       target: `./assets/articles/article-${Date.now()}.jpg`,
@@ -792,7 +878,9 @@ articleList.addEventListener("change", async (event) => {
     article.coverImageAlt = article.title || file.name;
     dirty = true;
     renderAll();
-    await saveContent();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([previousImage]);
+    }
   } catch (error) {
     setStatus("文章照片上传失败", "error");
     showToast(error.message, "error");
@@ -801,7 +889,7 @@ articleList.addEventListener("change", async (event) => {
   }
 });
 
-photoList.addEventListener("click", (event) => {
+photoList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-photo-action]");
   if (!button || !content) {
     return;
@@ -834,6 +922,9 @@ photoList.addEventListener("click", (event) => {
     );
     markDirty();
     renderAll();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([removedPhoto?.path]);
+    }
   } else if (button.dataset.photoAction === "upload") {
     document.querySelector(`[data-photo-upload="${index}"]`)?.click();
   }
@@ -851,6 +942,7 @@ photoList.addEventListener("change", async (event) => {
   setStatus("正在上传照片");
 
   try {
+    const previousPath = photo.path;
     const result = await uploadFile(input.files[0], {
       kind: "photo",
       target: `./assets/photos/photo-${String(index + 1).padStart(2, "0")}.jpg`,
@@ -859,7 +951,9 @@ photoList.addEventListener("change", async (event) => {
     photo.alt = photo.caption || input.files[0].name;
     dirty = true;
     renderAll();
-    await saveContent();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([previousPath]);
+    }
   } catch (error) {
     setStatus("照片上传失败", "error");
     showToast(error.message, "error");
@@ -880,6 +974,7 @@ document.querySelectorAll("[data-asset-upload]").forEach((input) => {
     setStatus("正在上传素材");
 
     try {
+      const previousPath = content.assets[assetName];
       const result = await uploadFile(file, {
         assetName,
         kind: assetName === "video" || assetName === "music" ? "media" : "image",
@@ -892,7 +987,9 @@ document.querySelectorAll("[data-asset-upload]").forEach((input) => {
       }
       dirty = true;
       renderAssetPreviews();
-      await saveContent();
+      if (await saveContent()) {
+        await deleteUnusedMediaAfterSave([previousPath]);
+      }
     } catch (error) {
       setStatus("素材上传失败", "error");
       showToast(error.message, "error");
@@ -1044,6 +1141,41 @@ newPhotoUploadInput.addEventListener("change", async () => {
 
 saveButton.addEventListener("click", saveContent);
 downloadButton.addEventListener("click", downloadContentScript);
+
+cleanupMediaButton.addEventListener("click", async () => {
+  if (serverMode !== "cloudflare") {
+    showToast("存储清理仅在 Cloudflare 部署中可用", "error");
+    return;
+  }
+
+  if (
+    !window.confirm(
+      "只会删除没有被照片、文章、音乐和站点素材引用的云端文件。确定开始清理吗？",
+    )
+  ) {
+    return;
+  }
+
+  cleanupMediaButton.disabled = true;
+  storageCleanupStatus.textContent = "正在检查并清理未使用文件...";
+  setStatus("正在清理云端存储");
+
+  try {
+    const result = await requestJson("/api/cleanup-media", {
+      method: "POST",
+      body: "{}",
+    });
+    storageCleanupStatus.textContent = `清理完成：删除 ${result.deleted} 个文件，保留 ${result.kept} 个正在使用的文件。`;
+    setStatus("云端存储清理完成", "ready");
+    showToast(`已释放 ${result.deleted} 个未使用文件`, "success");
+  } catch (error) {
+    storageCleanupStatus.textContent = `清理失败：${error.message}`;
+    setStatus("云端存储清理失败", "error");
+    showToast(error.message, "error");
+  } finally {
+    cleanupMediaButton.disabled = false;
+  }
+});
 
 tokenInput.value = sessionStorage.getItem("siteAdminToken") || "";
 tokenInput.addEventListener("input", () => {
