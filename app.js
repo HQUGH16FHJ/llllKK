@@ -236,6 +236,32 @@ function imageFallback(image, primary, fallback) {
   image.src = primary || fallback;
 }
 
+function resolveArticleImage(article) {
+  if (!article || article.coverPhotoId === "none") {
+    return null;
+  }
+
+  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
+  if (article.coverPhotoId) {
+    const coverPhoto = photos.find((photo) => photo.id === article.coverPhotoId);
+    if (coverPhoto) {
+      return coverPhoto;
+    }
+  }
+
+  if (article.coverImage) {
+    return {
+      path: article.coverImage,
+      alt: article.coverImageAlt || article.title || "",
+      caption: article.title || "",
+    };
+  }
+
+  return article.linkedPhotoId
+    ? photos.find((photo) => photo.id === article.linkedPhotoId) || null
+    : null;
+}
+
 function renderMedia() {
   const background = absoluteAsset(
     siteConfig.assets?.background,
@@ -256,10 +282,8 @@ function renderMedia() {
     Math.max(articles.length - 1, 0),
   );
   const featuredArticle = articles[featuredArticleIndex];
-  const featuredLinkedPhoto = featuredArticle?.linkedPhotoId
-    ? photos.find((photo) => photo.id === featuredArticle.linkedPhotoId)
-    : null;
-  const featuredPath = featuredLinkedPhoto?.path || heroPath;
+  const featuredArticleImage = resolveArticleImage(featuredArticle);
+  const featuredPath = featuredArticleImage?.path || heroPath;
   const featuredFallback = featuredPath.replace("/photos/", "/");
 
   document.documentElement.style.setProperty(
@@ -463,17 +487,15 @@ function openArticle(index) {
   articleReaderDate.textContent = article.date || "";
   articleReaderTitle.textContent = article.title || "";
   articleReaderLead.textContent = article.excerpt || "";
-  const linkedPhoto = article.linkedPhotoId
-    ? siteConfig.photos?.find((photo) => photo.id === article.linkedPhotoId)
-    : null;
-  const articleMedia = linkedPhoto
+  const articleImage = resolveArticleImage(article);
+  const articleMedia = articleImage
     ? document.createElement("figure")
     : null;
   if (articleMedia) {
     const image = document.createElement("img");
     articleMedia.className = "article-reader__media";
-    image.src = linkedPhoto.path;
-    image.alt = linkedPhoto.alt || linkedPhoto.caption || "";
+    image.src = articleImage.path;
+    image.alt = articleImage.alt || articleImage.caption || "";
     articleMedia.append(image);
   }
   articleReaderBody.replaceChildren(
@@ -670,7 +692,8 @@ function setupPointerEffects() {
       const index = Number(row.dataset.index);
       const article = siteConfig.articles?.[index];
       const photos = siteConfig.photos || [];
-      const photo = photos.length ? photos[index % photos.length] : null;
+      const articleImage = resolveArticleImage(article);
+      const photo = articleImage || (photos.length ? photos[index % photos.length] : null);
       const nextSource = photo?.path || siteConfig.assets?.background;
       const fallbackSource = nextSource?.replace("/photos/", "/");
       if (
