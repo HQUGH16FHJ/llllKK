@@ -916,19 +916,9 @@ function setupNavigation() {
 function setupPointerEffects() {
   const finePointer = window.matchMedia("(pointer: fine)").matches;
 
-  if (pointerGlow) {
+  if (pointerGlow && finePointer) {
     document.addEventListener("pointermove", (event) => {
       pointerGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-    });
-    document.addEventListener("pointerdown", (event) => {
-      pointerGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-      pointerGlow.classList.add("is-active");
-      if (!finePointer) {
-        window.setTimeout(
-          () => pointerGlow.classList.remove("is-active"),
-          520,
-        );
-      }
     });
   }
 
