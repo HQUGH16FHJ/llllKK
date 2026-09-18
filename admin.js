@@ -19,6 +19,9 @@ let serverMode = "unknown";
 let dirty = false;
 let toastTimer = null;
 
+const defaultBackgroundVideo =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260723_145606_ab143199-b593-4941-bb1b-9afca215416b.mp4";
+
 const assetTargets = {
   background: "./assets/background.jpg",
   backgroundVideo: "./assets/background-video.mp4",
@@ -322,6 +325,10 @@ async function loadContent() {
     const status = await requestJson("/api/status", { method: "GET" });
     serverMode = status.mode;
     content = await requestJson("/api/content", { method: "GET" });
+    content.assets = {
+      backgroundVideo: defaultBackgroundVideo,
+      ...(content.assets || {}),
+    };
     renderAll();
     if (serverMode === "cloudflare") {
       const storageLabel = status.storageMode === "r2" ? "R2" : status.storageMode === "kv" ? "KV" : "";
