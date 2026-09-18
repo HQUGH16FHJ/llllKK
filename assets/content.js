@@ -21,7 +21,14 @@ window.SITE_CONTENT = {
   },
   "music": {
     "title": "想自由",
-    "artist": "王安宇"
+    "artist": "王安宇",
+    "tracks": [
+      {
+        "title": "想自由",
+        "artist": "王安宇",
+        "path": "https://llllkk.online/assets/music.mp3"
+      }
+    ]
   },
   "photos": [
     {
