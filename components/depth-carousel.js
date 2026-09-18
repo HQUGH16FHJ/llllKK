@@ -50,6 +50,8 @@ class DepthCarousel {
       const image = document.createElement("img");
       const tint = document.createElement("span");
       const caption = document.createElement("span");
+      const date = document.createElement("small");
+      const title = document.createElement("strong");
 
       card.type = "button";
       card.className = "depth-carousel__card";
@@ -80,7 +82,9 @@ class DepthCarousel {
       tint.className = "depth-carousel__tint";
       tint.style.background = "#05060a";
       caption.className = "depth-carousel__caption";
-      caption.textContent = item.caption || "";
+      date.textContent = item.date || "";
+      title.textContent = item.caption || "";
+      caption.append(date, title);
       card.append(image, tint, caption);
       stage.append(card);
       this.cards.push({ card, tint });
