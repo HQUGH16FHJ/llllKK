@@ -15,11 +15,22 @@
       content="文章、照片、影像和一些仍然值得认真记录的事情。"
     />
     <title>刘骐硕的个人博客</title>
-    <link rel="stylesheet" href="./styles.css?v=20260918-15" />
+    <link rel="stylesheet" href="./components/depth-carousel.css?v=20260918-1" />
+    <link rel="stylesheet" href="./components/text-type.css?v=20260918-1" />
+    <link rel="stylesheet" href="./components/star-border.css?v=20260918-1" />
+    <link rel="stylesheet" href="./styles.css?v=20260918-18" />
   </head>
   <body>
     <div class="ambient" aria-hidden="true">
       <div class="ambient__image"></div>
+      <video
+        class="ambient__video"
+        id="ambient-video"
+        muted
+        loop
+        playsinline
+        preload="metadata"
+      ></video>
       <div class="ambient__veil"></div>
       <div class="ambient__noise"></div>
     </div>
@@ -92,27 +103,36 @@
           <h1 class="hero-title" data-split-text>
             <span data-site="name">刘骐硕</span>
           </h1>
-          <p class="hero__role" data-site="role">健身爱好者 大学生</p>
+          <p class="hero__role">
+            <span id="hero-role-type">健身爱好者 大学生</span>
+          </p>
           <p class="hero__intro" data-site="about">
             你好，我是刘骐硕。我在河南读书，也是一名健身爱好者。我关注普通生活里的细节，
             也喜欢把想法变成能够被看见、被使用、被记住的东西。
           </p>
 
           <div class="hero__actions">
-            <a class="action-link action-link--solid" href="#journal">
-              开始阅读
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M5 12h14" />
-                <path d="m13 6 6 6-6 6" />
-              </svg>
+            <a
+              class="action-link action-link--solid star-border-container"
+              href="#journal"
+            >
+              <span class="border-gradient-bottom" aria-hidden="true"></span>
+              <span class="border-gradient-top" aria-hidden="true"></span>
+              <span class="inner-content">
+                开始阅读
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              </span>
             </a>
             <a class="action-link" href="#stills">浏览照片</a>
           </div>
@@ -222,7 +242,8 @@
           </div>
           <p>留住那些不需要解释，也舍不得忘记的画面。</p>
         </div>
-        <div class="photo-grid" id="photo-grid"></div>
+        <div class="depth-carousel-host" id="depth-carousel"></div>
+        <div class="photo-grid photo-grid--archive" id="photo-grid"></div>
       </section>
 
       <section class="film" id="film">
@@ -452,7 +473,9 @@
       </button>
     </div>
 
-    <script src="./assets/content.js?v=20260918-15"></script>
-    <script src="./app.js?v=20260918-15"></script>
+    <script src="./components/text-type.js?v=20260918-1"></script>
+    <script src="./components/depth-carousel.js?v=20260918-1"></script>
+    <script src="./assets/content.js?v=20260918-18"></script>
+    <script src="./app.js?v=20260918-18"></script>
   </body>
 </html>
