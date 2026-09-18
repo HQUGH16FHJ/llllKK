@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>内容管理后台</title>
-    <link rel="stylesheet" href="./admin.css?v=20260918-12" />
+    <link rel="stylesheet" href="./admin.css?v=20260918-13" />
   </head>
   <body>
     <header class="admin-header">
@@ -59,6 +59,12 @@
               <circle cx="12" cy="7" r="4" />
             </svg>
             基本资料
+          </button>
+          <button type="button" data-tab="featured">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z" />
+            </svg>
+            编辑精选
           </button>
           <button type="button" data-tab="articles">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -159,10 +165,6 @@
               <span>首页主视觉</span>
               <select data-index-field="heroPhotoIndex" id="hero-photo-select"></select>
             </label>
-            <label>
-              <span>首页精选文章</span>
-              <select data-index-field="featuredArticleIndex" id="featured-article-select"></select>
-            </label>
             <label class="form-grid__wide">
               <span>个人短句</span>
               <input type="text" data-field="statement" />
@@ -171,6 +173,54 @@
               <span>关于我</span>
               <textarea rows="6" data-field="about"></textarea>
             </label>
+          </div>
+        </section>
+
+        <section class="admin-section" data-panel="featured">
+          <div class="section-title">
+            <div>
+              <p>FEATURED</p>
+              <h1>编辑精选</h1>
+            </div>
+            <span>不填写的项目会自动使用关联文章内容</span>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              <span>精选日期</span>
+              <input type="text" data-featured-field="date" placeholder="例如 09.18" />
+            </label>
+            <label>
+              <span>精选标题</span>
+              <input type="text" data-featured-field="title" placeholder="自动使用文章标题" />
+            </label>
+            <label class="form-grid__wide">
+              <span>精选简介</span>
+              <input type="text" data-featured-field="excerpt" placeholder="自动使用文章摘要" />
+            </label>
+            <label class="form-grid__wide">
+              <span>阅读全文时打开的文章</span>
+              <select data-index-field="featuredArticleIndex" id="featured-article-select"></select>
+            </label>
+          </div>
+
+          <div class="article-media featured-editor">
+            <div class="article-media__preview" id="featured-photo-preview">
+              <span>自动使用文章照片</span>
+            </div>
+            <div class="article-media__controls">
+              <label>
+                <span>精选照片</span>
+                <select id="featured-photo-select"></select>
+              </label>
+              <div class="article-media__actions">
+                <button class="button button--ghost" id="featured-photo-upload-button" type="button">
+                  上传精选照片
+                </button>
+                <input id="featured-photo-upload" type="file" accept="image/*" hidden />
+              </div>
+              <p>选择照片档案中的图片，或者上传一张只在编辑精选区域使用的图片。</p>
+            </div>
           </div>
         </section>
 
@@ -352,6 +402,6 @@
 
     <div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
 
-    <script src="./admin.js?v=20260918-12"></script>
+    <script src="./admin.js?v=20260918-13"></script>
   </body>
 </html>
