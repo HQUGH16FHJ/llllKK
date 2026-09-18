@@ -33,6 +33,7 @@
   },
   "photos": [
     {
+      "id": "photo-01",
       "path": "https://llllkk.online/assets/photo-02.jpg",
       "caption": "新的照片",
       "date": "2026",
@@ -40,6 +41,7 @@
       "alt": "新的照片"
     },
     {
+      "id": "photo-02",
       "path": "https://llllkk.online/media/photos/1789686587680-7a983acdc606d65ad4d1d285d51af9cd.jpg",
       "caption": "帅吗？",
       "date": "2026",
@@ -80,6 +82,7 @@
       "date": "08.26",
       "title": "最近拍下的光",
       "excerpt": "傍晚的颜色很短暂，所以更值得耐心等一会儿。",
+      "linkedPhotoId": "photo-01",
       "body": [
         "我最近开始习惯在傍晚出门走一会儿。太阳落下去以前，很多东西会短暂地变得不一样，墙面、树叶和路人的侧脸都像被轻轻擦亮。",
         "这样的光只停留十几分钟。有时候还没走到想拍照的位置，它就已经消失了。但等待本身，也慢慢变成一天里很安静的一段时间。",
