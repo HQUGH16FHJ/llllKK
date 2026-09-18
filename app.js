@@ -703,6 +703,13 @@ function openArticle(index) {
       return p;
     }),
   );
+  articleReaderBody.querySelectorAll("p").forEach((element, index) => {
+    element.classList.add("text-motion");
+    element.style.setProperty(
+      "--text-delay",
+      `${Math.min(index * 70, 210)}ms`,
+    );
+  });
   articleReader.classList.add("is-open");
   articleReader.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-reader-open");
