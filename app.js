@@ -640,9 +640,13 @@ function setupTextReveals() {
 function observeTextMotion(root = document) {
   if (!textMotionObserver) {
     textMotionObserver = new IntersectionObserver(
-      (entries) => {
+      (entries, observer) => {
         entries.forEach((entry) => {
-          entry.target.classList.toggle("is-visible", entry.isIntersecting);
+          if (!entry.isIntersecting) {
+            return;
+          }
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
         });
       },
       {
@@ -652,8 +656,21 @@ function observeTextMotion(root = document) {
     );
   }
 
-  root.querySelectorAll(".text-motion").forEach((element) => {
+  root.querySelectorAll(".text-motion:not(.is-visible)").forEach((element) => {
     textMotionObserver.observe(element);
+  });
+}
+
+function revealVisibleText() {
+  document.querySelectorAll(".text-motion:not(.is-visible)").forEach((element) => {
+    const rect = element.getBoundingClientRect();
+    const isVisible =
+      rect.top < window.innerHeight * 0.96 && rect.bottom > window.innerHeight * 0.04;
+    if (!isVisible) {
+      return;
+    }
+    element.classList.add("is-visible");
+    textMotionObserver?.unobserve(element);
   });
 }
 
@@ -1359,6 +1376,7 @@ window.addEventListener(
           52,
         )}px, 0)`;
       }
+      revealVisibleText();
       ticking = false;
     });
   },
@@ -1380,4 +1398,5 @@ syncCloudContent();
 window.setTimeout(() => {
   document.body.classList.add("is-loaded");
   pageLoader.classList.add("is-hidden");
+  revealVisibleText();
 }, 1800);
