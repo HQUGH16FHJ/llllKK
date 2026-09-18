@@ -1,5 +1,7 @@
 import { isAuthorized, unauthorized } from "../_lib/auth.js";
 
+const protectionWindowMs = 30 * 60 * 1000;
+
 function normalizeMediaKey(value) {
   if (typeof value !== "string" || !value.includes("/media/")) {
     return null;
@@ -45,29 +47,42 @@ function collectReferencedMedia(value, result) {
 }
 
 async function listKvMediaKeys(kv) {
-  const keys = [];
+  const items = [];
   let cursor;
 
   do {
     const page = await kv.list({ prefix: "media:", cursor });
-    keys.push(...page.keys.map((item) => item.name.slice("media:".length)));
+    items.push(
+      ...page.keys.map((item) => ({
+        key: item.name.slice("media:".length),
+        uploadedAt: Number(item.metadata?.createdAt) || 0,
+      })),
+    );
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
 
-  return keys;
+  return items;
 }
 
 async function listR2MediaKeys(bucket) {
-  const keys = [];
+  const items = [];
   let cursor;
 
   do {
     const page = await bucket.list({ cursor });
-    keys.push(...page.objects.map((item) => item.key));
+    items.push(
+      ...page.objects.map((item) => ({
+        key: item.key,
+        uploadedAt:
+          Number(item.customMetadata?.createdAt) ||
+          item.uploaded?.getTime?.() ||
+          0,
+      })),
+    );
     cursor = page.truncated ? page.cursor : undefined;
   } while (cursor);
 
-  return keys;
+  return items;
 }
 
 export async function onRequestPost(context) {
@@ -80,6 +95,7 @@ export async function onRequestPost(context) {
   }
 
   try {
+    const body = await context.request.json().catch(() => ({}));
     const content = await context.env.SITE_CONTENT?.get("site-content", "json");
     if (!content) {
       return Response.json({ error: "站点内容尚未保存" }, { status: 400 });
@@ -88,16 +104,25 @@ export async function onRequestPost(context) {
     const referenced = new Set();
     collectReferencedMedia(content, referenced);
 
-    const allKeys = context.env.MEDIA
+    const allItems = context.env.MEDIA
       ? await listR2MediaKeys(context.env.MEDIA)
       : await listKvMediaKeys(context.env.SITE_CONTENT);
-    const unusedKeys = allKeys.filter((objectKey) => !referenced.has(objectKey));
+    const now = Date.now();
+    const unusedItems = allItems.filter(
+      (item) => !referenced.has(item.key),
+    );
+    const deletableItems = unusedItems.filter(
+      (item) =>
+        !item.uploadedAt || now - item.uploadedAt >= protectionWindowMs,
+    );
+    const deferred = unusedItems.length - deletableItems.length;
+    const unusedKeys = deletableItems.map((item) => item.key);
 
-    if (context.env.MEDIA) {
+    if (!body.dryRun && context.env.MEDIA) {
       for (let index = 0; index < unusedKeys.length; index += 100) {
         await context.env.MEDIA.delete(unusedKeys.slice(index, index + 100));
       }
-    } else {
+    } else if (!body.dryRun) {
       for (const objectKey of unusedKeys) {
         await context.env.SITE_CONTENT.delete(`media:${objectKey}`);
       }
@@ -106,8 +131,12 @@ export async function onRequestPost(context) {
     return Response.json({
       ok: true,
       storage: context.env.MEDIA ? "r2" : "kv",
-      deleted: unusedKeys.length,
-      kept: allKeys.length - unusedKeys.length,
+      dryRun: Boolean(body.dryRun),
+      deleted: body.dryRun ? 0 : unusedKeys.length,
+      unusedCount: unusedKeys.length,
+      kept: allItems.length - unusedItems.length,
+      deferred,
+      preview: unusedKeys.slice(0, 20).map((key) => `/media/${key}`),
     });
   } catch (error) {
     return Response.json(
