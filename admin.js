@@ -12,6 +12,10 @@ const addTrackButton = document.querySelector("#add-track");
 const musicUploadInput = document.querySelector("#music-upload-input");
 const heroPhotoSelect = document.querySelector("#hero-photo-select");
 const featuredArticleSelect = document.querySelector("#featured-article-select");
+const featuredPhotoSelect = document.querySelector("#featured-photo-select");
+const featuredPhotoPreview = document.querySelector("#featured-photo-preview");
+const featuredPhotoUploadButton = document.querySelector("#featured-photo-upload-button");
+const featuredPhotoUploadInput = document.querySelector("#featured-photo-upload");
 const backgroundModeSelect = document.querySelector("#background-mode-select");
 const statusDot = document.querySelector("#status-dot");
 const statusText = document.querySelector("#status-text");
@@ -137,6 +141,32 @@ function resolveArticleImage(article) {
     : null;
 }
 
+function resolveFeaturedImage() {
+  const featured = content?.featured || {};
+  const photos = Array.isArray(content?.photos) ? content.photos : [];
+
+  if (featured.photoId) {
+    const selectedPhoto = photos.find((photo) => photo.id === featured.photoId);
+    if (selectedPhoto) {
+      return selectedPhoto;
+    }
+  }
+
+  if (featured.image) {
+    return {
+      path: featured.image,
+      alt: featured.imageAlt || featured.title || "",
+      caption: featured.title || "",
+    };
+  }
+
+  const articleIndex = Math.min(
+    Math.max(Number(content?.featuredArticleIndex) || 0, 0),
+    Math.max(content?.articles?.length - 1, 0),
+  );
+  return resolveArticleImage(content?.articles?.[articleIndex]);
+}
+
 function articleCoverOptions(article) {
   const options = [
     `<option value="__auto__" ${!article.coverPhotoId && !article.coverImage ? "selected" : ""}>自动关联照片记录</option>`,
@@ -214,6 +244,15 @@ function ensureContentShape() {
   content.articles = Array.isArray(content.articles) ? content.articles : [];
   content.photos = Array.isArray(content.photos) ? content.photos : [];
   content.timeline = Array.isArray(content.timeline) ? content.timeline : [];
+  content.featured =
+    content.featured && typeof content.featured === "object"
+      ? content.featured
+      : {};
+  ["date", "title", "excerpt", "photoId", "image", "imageAlt"].forEach((key) => {
+    if (typeof content.featured[key] !== "string") {
+      content.featured[key] = "";
+    }
+  });
   content.photos.forEach((photo, index) => {
     photo.id = photo.id || `photo-${index + 1}`;
   });
@@ -279,6 +318,43 @@ function renderIndexSelects() {
   featuredArticleSelect.value = String(content.featuredArticleIndex || 0);
 }
 
+function renderFeaturedEditor() {
+  const featured = content.featured || {};
+  const featuredImage = resolveFeaturedImage();
+  const options = [
+    `<option value="__article__" ${
+      !featured.photoId && !featured.image ? "selected" : ""
+    }>自动使用关联文章照片</option>`,
+    featured.image && !featured.photoId
+      ? '<option value="__uploaded__" selected>当前上传的精选照片</option>'
+      : "",
+  ];
+
+  content.photos.forEach((photo, index) => {
+    options.push(
+      `<option value="${escapeHtml(photo.id)}" ${
+        featured.photoId === photo.id ? "selected" : ""
+      }>${escapeHtml(photo.caption || `照片 ${index + 1}`)}</option>`,
+    );
+  });
+
+  featuredPhotoSelect.innerHTML = options.join("");
+  featuredPhotoPreview.classList.toggle("has-image", Boolean(featuredImage));
+  featuredPhotoPreview.innerHTML = featuredImage
+    ? `<img src="${escapeHtml(featuredImage.path)}" alt="" />`
+    : "<span>自动使用文章照片</span>";
+
+  if (featuredImage) {
+    const image = featuredPhotoPreview.querySelector("img");
+    image.addEventListener("error", () => {
+      const fallbackPath = featuredImage.path.replace("/photos/", "/");
+      if (fallbackPath !== featuredImage.path) {
+        image.src = fallbackPath;
+      }
+    });
+  }
+}
+
 function fillProfileFields() {
   document.querySelectorAll("[data-field]").forEach((field) => {
     field.value = content[field.dataset.field] || "";
@@ -290,6 +366,10 @@ function fillProfileFields() {
 
   document.querySelectorAll("[data-index-field]").forEach((field) => {
     field.value = String(content[field.dataset.indexField] || 0);
+  });
+
+  document.querySelectorAll("[data-featured-field]").forEach((field) => {
+    field.value = content.featured?.[field.dataset.featuredField] || "";
   });
 
   document.querySelectorAll("[data-asset-url]").forEach((field) => {
@@ -527,6 +607,7 @@ function renderAssetPreviews() {
 function renderAll() {
   ensureContentShape();
   renderIndexSelects();
+  renderFeaturedEditor();
   fillProfileFields();
   renderArticles();
   renderTimeline();
@@ -706,6 +787,7 @@ document.addEventListener("input", (event) => {
   const articleField = event.target.closest("[data-article-prop]");
   const timelineField = event.target.closest("[data-timeline-prop]");
   const photoField = event.target.closest("[data-photo-prop]");
+  const featuredField = event.target.closest("[data-featured-field]");
   const trackField = event.target.closest("[data-track-prop]");
   const assetUrlField = event.target.closest("[data-asset-url]");
   const backgroundModeField = event.target.closest("#background-mode-select");
@@ -715,6 +797,9 @@ document.addEventListener("input", (event) => {
     markDirty();
   } else if (indexField && content) {
     content[indexField.dataset.indexField] = Number(indexField.value) || 0;
+    if (indexField.dataset.indexField === "featuredArticleIndex") {
+      renderFeaturedEditor();
+    }
     markDirty();
   } else if (musicField && content) {
     content.music[musicField.dataset.musicField] = musicField.value;
@@ -746,6 +831,9 @@ document.addEventListener("input", (event) => {
         linkedArticle.date = photoField.value || linkedArticle.date;
       }
     }
+    markDirty();
+  } else if (featuredField && content) {
+    content.featured[featuredField.dataset.featuredField] = featuredField.value;
     markDirty();
   } else if (trackField && content) {
     content.music.tracks[Number(trackField.dataset.trackIndex)][trackField.dataset.trackProp] = trackField.value;
@@ -912,6 +1000,9 @@ photoList.addEventListener("click", async (event) => {
         article.coverPhotoId = "";
       }
     });
+    if (content.featured.photoId === removedPhoto.id) {
+      content.featured.photoId = "";
+    }
     content.featuredArticleIndex = Math.min(
       Math.max(content.featuredArticleIndex, 0),
       Math.max(content.articles.length - 1, 0),
@@ -1036,6 +1127,68 @@ musicUploadInput.addEventListener("change", async () => {
 function siteConfigFallbackArtist() {
   return content?.music?.artist || content?.name || "";
 }
+
+featuredPhotoUploadButton.addEventListener("click", () => {
+  if (content) {
+    featuredPhotoUploadInput.click();
+  }
+});
+
+featuredPhotoSelect.addEventListener("change", async () => {
+  if (!content) {
+    return;
+  }
+
+  if (featuredPhotoSelect.value === "__uploaded__") {
+    return;
+  }
+
+  const previousImage = content.featured.image;
+  content.featured.photoId =
+    featuredPhotoSelect.value === "__article__"
+      ? ""
+      : featuredPhotoSelect.value;
+  content.featured.image = "";
+  markDirty();
+  renderAll();
+  if (await saveContent()) {
+    await deleteUnusedMediaAfterSave([previousImage]);
+  }
+});
+
+featuredPhotoUploadInput.addEventListener("change", async () => {
+  const file = featuredPhotoUploadInput.files?.[0];
+  if (!file || !content) {
+    return;
+  }
+
+  featuredPhotoUploadInput.disabled = true;
+  featuredPhotoUploadButton.disabled = true;
+  setStatus("正在上传精选照片");
+
+  try {
+    const previousImage = content.featured.image;
+    const result = await uploadFile(file, {
+      kind: "image",
+      target: `./assets/featured/featured-${Date.now()}.jpg`,
+    });
+    content.featured.photoId = "";
+    content.featured.image = result.path;
+    content.featured.imageAlt = content.featured.title || file.name;
+    dirty = true;
+    renderAll();
+    if (await saveContent()) {
+      await deleteUnusedMediaAfterSave([previousImage]);
+    }
+  } catch (error) {
+    setStatus("精选照片上传失败", "error");
+    showToast(error.message, "error");
+  } finally {
+    featuredPhotoUploadInput.value = "";
+    featuredPhotoUploadInput.disabled = false;
+    featuredPhotoUploadButton.disabled = false;
+  }
+});
 
 addArticleButton.addEventListener("click", () => {
   if (!content) {
