@@ -45,6 +45,7 @@ let siteConfig = window.SITE_CONTENT || defaultSiteConfig;
 
 const pageLoader = document.querySelector("#page-loader");
 const ambient = document.querySelector(".ambient");
+const ambientImage = document.querySelector(".ambient__image");
 const ambientVideo = document.querySelector("#ambient-video");
 const scrollProgress = document.querySelector("#scroll-progress");
 const siteHeader = document.querySelector(".site-header");
@@ -103,6 +104,7 @@ let currentFeaturedPhoto = null;
 let pointerStartX = null;
 let depthCarouselInstance = null;
 let roleTyper = null;
+let textMotionObserver = null;
 let musicTracks = [];
 let currentMusicIndex = -1;
 let musicHistory = [];
@@ -248,6 +250,33 @@ function imageFallback(image, primary, fallback) {
   image.src = primary || fallback;
 }
 
+function setAmbientImage(primary, fallback) {
+  if (!ambientImage) {
+    return;
+  }
+
+  const applyImage = (source) => {
+    ambientImage.style.backgroundImage = `url("${source}")`;
+    ambientImage.classList.add("has-background");
+  };
+  const preload = new Image();
+
+  preload.onload = () => applyImage(primary);
+  preload.onerror = () => {
+    if (fallback && fallback !== primary) {
+      const fallbackImage = new Image();
+      fallbackImage.onload = () => applyImage(fallback);
+      fallbackImage.onerror = () => {
+        ambientImage.classList.remove("has-background");
+      };
+      fallbackImage.src = fallback;
+      return;
+    }
+    ambientImage.classList.remove("has-background");
+  };
+  preload.src = primary;
+}
+
 function resolveArticleImage(article) {
   if (!article || article.coverPhotoId === "none") {
     return null;
@@ -325,8 +354,7 @@ function renderMedia() {
     "--ambient-image",
     `url("${background}")`,
   );
-  document.querySelector(".ambient__image").style.backgroundImage =
-    `url("${background}")`;
+  setAmbientImage(background, "./assets/background.jpg");
   ambientVideo.poster = background;
   const backgroundMode = siteConfig.backgroundMode || "video";
 
@@ -510,6 +538,120 @@ function setupTextReveals() {
       ".journal__heading h2, .stills__heading h2, .film__copy h2, .about__statement blockquote, .about__statement > p, .hero__intro",
     )
     .forEach((element) => element.classList.add("reveal-text"));
+
+  const motionTargets = [
+    ".hero__copy",
+    ".hero__visual",
+    ".featured__article",
+    ".article-row",
+    ".depth-carousel-host",
+    ".video-stage",
+    ".about__details",
+    ".timeline__item",
+  ];
+
+  motionTargets.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((element, index) => {
+      element.classList.add("reveal-up");
+      element.style.setProperty(
+        "--reveal-delay",
+        `${Math.min(index * 55, 220)}ms`,
+      );
+    });
+  });
+
+  const textSelectors = [
+    ".site-brand strong",
+    ".site-brand small",
+    ".primary-nav a",
+    ".header-email span",
+    ".hero__hello",
+    ".hero__role",
+    ".hero__intro",
+    ".hero__facts dt",
+    ".hero__facts dd",
+    ".hero__visual-note span",
+    ".hero__visual-note strong",
+    ".hero__profile strong",
+    ".hero__profile small",
+    ".section-line span",
+    ".featured__meta time",
+    ".featured__meta span",
+    ".featured__copy > p",
+    ".featured__read",
+    ".velocity-strip__track span",
+    ".journal__heading h2",
+    ".journal__heading > p",
+    ".article-row time",
+    ".article-row h3",
+    ".article-row__title p",
+    ".article-row__tag",
+    ".stills__heading h2",
+    ".stills__heading > p",
+    ".film__copy h2",
+    ".film__copy > p",
+    ".video-stage__fallback p",
+    ".about__statement blockquote",
+    ".about__statement > p",
+    ".about__facts dt",
+    ".about__facts dd",
+    ".timeline__item time",
+    ".timeline__item h3",
+    ".timeline__item p",
+    ".footer__brand strong",
+    ".footer__top > p",
+    ".footer__bottom p",
+    ".footer__bottom a",
+    ".music-dock__title span",
+    ".music-dock__title strong",
+    ".music-dock__title small",
+    ".depth-carousel__caption small",
+    ".depth-carousel__caption strong",
+    ".article-reader__header > span",
+    ".article-reader__header time",
+    ".article-reader__content h2",
+    ".article-reader__lead",
+    ".article-reader__body p",
+    ".lightbox__caption span",
+    ".lightbox__caption h3",
+    ".lightbox__caption p",
+  ];
+
+  textSelectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((element, index) => {
+      if (
+        element.matches("[data-split-text]") ||
+        element.closest("[data-split-text]")
+      ) {
+        return;
+      }
+      element.classList.add("text-motion");
+      element.style.setProperty(
+        "--text-delay",
+        `${Math.min((index % 7) * 45, 190)}ms`,
+      );
+    });
+  });
+}
+
+function observeTextMotion(root = document) {
+  if (!textMotionObserver) {
+    textMotionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle("is-visible", entry.isIntersecting);
+        });
+      },
+      {
+        threshold: 0.12,
+        rootMargin: "0px 0px -7% 0px",
+      },
+    );
+  }
+
+  root.querySelectorAll(".text-motion").forEach((element) => {
+    textMotionObserver.observe(element);
+  });
 }
 
 function openArticle(index) {
@@ -564,6 +706,7 @@ function openArticle(index) {
   articleReader.classList.add("is-open");
   articleReader.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-reader-open");
+  observeTextMotion(articleReaderBody);
   closeArticleButton.focus();
 }
 
@@ -608,6 +751,7 @@ function showLightboxPhoto(photo, index = -1) {
   lightbox.classList.add("is-open");
   lightbox.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-lightbox-open");
+  observeTextMotion(lightbox);
   lightboxClose.focus();
 }
 
@@ -707,6 +851,7 @@ function observeReveals() {
   document.querySelectorAll(".reveal-text:not(.is-visible)").forEach((element) => {
     revealObserver.observe(element);
   });
+  observeTextMotion();
 }
 
 function setupNavigation() {
@@ -1075,9 +1220,16 @@ window.addEventListener(
       const progress = maxScroll > 0 ? scrollY / maxScroll : 0;
       scrollProgress.style.transform = `scaleX(${progress})`;
       siteHeader.classList.toggle("is-scrolled", scrollY > 28);
+      document.documentElement.style.setProperty(
+        "--ambient-shift",
+        `${Math.min(scrollY * 0.035, 30)}px`,
+      );
 
       if (heroVisual && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        heroVisual.style.transform = `translateY(${Math.min(scrollY * 0.06, 70)}px)`;
+        heroVisual.style.transform = `translate3d(0, ${Math.min(
+          scrollY * 0.045,
+          52,
+        )}px, 0)`;
       }
       ticking = false;
     });
