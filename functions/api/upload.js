@@ -75,11 +75,15 @@ export async function onRequestPost(context) {
           contentType: mimeType,
           cacheControl: "public, max-age=31536000, immutable",
         },
+        customMetadata: {
+          createdAt: String(Date.now()),
+        },
       });
     } else {
       await context.env.SITE_CONTENT.put(`media:${objectKey}`, bytesToBase64(bytes), {
         metadata: {
           contentType: mimeType,
+          createdAt: Date.now(),
         },
       });
     }
