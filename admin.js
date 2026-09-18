@@ -44,6 +44,52 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function resolveArticleImage(article) {
+  if (!article || article.coverPhotoId === "none") {
+    return null;
+  }
+
+  const photos = Array.isArray(content?.photos) ? content.photos : [];
+  if (article.coverPhotoId) {
+    const coverPhoto = photos.find((photo) => photo.id === article.coverPhotoId);
+    if (coverPhoto) {
+      return coverPhoto;
+    }
+  }
+
+  if (article.coverImage) {
+    return {
+      path: article.coverImage,
+      alt: article.coverImageAlt || article.title || "",
+      caption: article.title || "",
+    };
+  }
+
+  return article.linkedPhotoId
+    ? photos.find((photo) => photo.id === article.linkedPhotoId) || null
+    : null;
+}
+
+function articleCoverOptions(article) {
+  const options = [
+    `<option value="__auto__" ${!article.coverPhotoId && !article.coverImage ? "selected" : ""}>自动关联照片记录</option>`,
+    article.coverImage && !article.coverPhotoId
+      ? '<option value="__uploaded__" selected>当前上传的文章照片</option>'
+      : "",
+    `<option value="none" ${article.coverPhotoId === "none" ? "selected" : ""}>不显示文章照片</option>`,
+  ];
+
+  content.photos.forEach((photo, index) => {
+    options.push(
+      `<option value="${escapeHtml(photo.id)}" ${
+        article.coverPhotoId === photo.id ? "selected" : ""
+      }>${escapeHtml(photo.caption || `照片 ${index + 1}`)}</option>`,
+    );
+  });
+
+  return options.join("");
+}
+
 function showToast(message, type = "") {
   window.clearTimeout(toastTimer);
   toast.textContent = message;
@@ -103,6 +149,22 @@ function ensureContentShape() {
   content.timeline = Array.isArray(content.timeline) ? content.timeline : [];
   content.photos.forEach((photo, index) => {
     photo.id = photo.id || `photo-${index + 1}`;
+  });
+  content.articles.forEach((article) => {
+    article.body = Array.isArray(article.body) ? article.body : [];
+    if (
+      article.linkedPhotoId &&
+      !Object.prototype.hasOwnProperty.call(article, "linkedByPhoto")
+    ) {
+      const linkedPhoto = content.photos.find(
+        (photo) => photo.id === article.linkedPhotoId,
+      );
+      article.linkedByPhoto = Boolean(
+        linkedPhoto &&
+          article.title === linkedPhoto.caption &&
+          String(article.excerpt || "").includes("照片"),
+      );
+    }
   });
   content.music = content.music || {};
   content.music.tracks = Array.isArray(content.music.tracks)
@@ -173,7 +235,9 @@ function fillProfileFields() {
 function renderArticles() {
   articleList.innerHTML = content.articles
     .map(
-      (article, index) => `
+      (article, index) => {
+        const articleImage = resolveArticleImage(article);
+        return `
         <article class="editor-card" data-article-card="${index}">
           <header class="editor-card__header">
             <strong>${escapeHtml(article.title || `未命名文章 ${index + 1}`)}</strong>
@@ -206,9 +270,33 @@ function renderArticles() {
               <span>正文，段落之间空一行</span>
               <textarea rows="10" data-article-index="${index}" data-article-prop="body">${escapeHtml(article.body.join("\n\n"))}</textarea>
             </label>
+            <div class="article-media editor-card__wide">
+              <div class="article-media__preview${articleImage ? " has-image" : ""}">
+                ${
+                  articleImage
+                    ? `<img src="${escapeHtml(articleImage.path)}" alt="" />`
+                    : "<span>暂无文章照片</span>"
+                }
+              </div>
+              <div class="article-media__controls">
+                <label>
+                  <span>文章照片</span>
+                  <select data-article-cover="${index}">
+                    ${articleCoverOptions(article)}
+                  </select>
+                </label>
+                <div class="article-media__actions">
+                  <button class="button button--ghost" type="button" data-article-action="upload-image" data-index="${index}">上传文章照片</button>
+                  <button class="button button--ghost" type="button" data-article-action="clear-image" data-index="${index}">移除配图</button>
+                  <input type="file" accept="image/*" hidden data-article-image-upload="${index}" />
+                </div>
+                <p>可以选择照片档案里的图片，也可以上传一张只用于这篇文章的图片。</p>
+              </div>
+            </div>
           </div>
         </article>
-      `,
+      `;
+      },
     )
     .join("");
 }
@@ -583,9 +671,9 @@ document.addEventListener("input", (event) => {
       (article) => article.linkedPhotoId === photo.id,
     );
     if (linkedArticle) {
-      if (property === "caption") {
+      if (property === "caption" && linkedArticle.linkedByPhoto) {
         linkedArticle.title = photoField.value || "新的照片记录";
-      } else if (property === "date") {
+      } else if (property === "date" && linkedArticle.linkedByPhoto) {
         linkedArticle.date = photoField.value || linkedArticle.date;
       }
     }
@@ -656,6 +744,59 @@ articleList.addEventListener("click", (event) => {
     );
     markDirty();
     renderAll();
+  } else if (button.dataset.articleAction === "upload-image") {
+    document.querySelector(`[data-article-image-upload="${index}"]`)?.click();
+  } else if (button.dataset.articleAction === "clear-image") {
+    content.articles[index].coverPhotoId = "none";
+    content.articles[index].coverImage = "";
+    markDirty();
+    renderAll();
+  }
+});
+
+articleList.addEventListener("change", async (event) => {
+  const coverSelect = event.target.closest("[data-article-cover]");
+  const uploadInput = event.target.closest("[data-article-image-upload]");
+
+  if (coverSelect && content) {
+    const article = content.articles[Number(coverSelect.dataset.articleCover)];
+    if (coverSelect.value === "__uploaded__") {
+      return;
+    }
+    article.coverPhotoId =
+      coverSelect.value === "__auto__" ? "" : coverSelect.value;
+    article.coverImage = "";
+    markDirty();
+    renderAll();
+    return;
+  }
+
+  if (!uploadInput?.files?.[0] || !content) {
+    return;
+  }
+
+  const index = Number(uploadInput.dataset.articleImageUpload);
+  const article = content.articles[index];
+  uploadInput.disabled = true;
+  setStatus("正在上传文章照片");
+
+  try {
+    const file = uploadInput.files[0];
+    const result = await uploadFile(file, {
+      kind: "image",
+      target: `./assets/articles/article-${Date.now()}.jpg`,
+    });
+    article.coverPhotoId = "";
+    article.coverImage = result.path;
+    article.coverImageAlt = article.title || file.name;
+    dirty = true;
+    renderAll();
+    await saveContent();
+  } catch (error) {
+    setStatus("文章照片上传失败", "error");
+    showToast(error.message, "error");
+  } finally {
+    uploadInput.disabled = false;
   }
 });
 
@@ -674,8 +815,14 @@ photoList.addEventListener("click", (event) => {
     const removedPhoto = content.photos[index];
     content.photos.splice(index, 1);
     content.articles = content.articles.filter(
-      (article) => article.linkedPhotoId !== removedPhoto.id,
+      (article) =>
+        !(article.linkedByPhoto && article.linkedPhotoId === removedPhoto.id),
     );
+    content.articles.forEach((article) => {
+      if (article.coverPhotoId === removedPhoto.id) {
+        article.coverPhotoId = "";
+      }
+    });
     content.featuredArticleIndex = Math.min(
       Math.max(content.featuredArticleIndex, 0),
       Math.max(content.articles.length - 1, 0),
@@ -859,6 +1006,7 @@ addPhotoButton.addEventListener("click", () => {
     excerpt: "一张新的照片已经加入档案。",
     body: ["这张照片记录下了最近的一个片段。"],
     linkedPhotoId: photoId,
+    linkedByPhoto: true,
   });
   content.featuredArticleIndex = 0;
   markDirty();
