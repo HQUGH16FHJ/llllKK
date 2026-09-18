@@ -46,6 +46,9 @@ const featuredPreview = document.querySelector("#featured-preview");
 const featuredImage = document.querySelector("#featured-image");
 const featuredCount = document.querySelector("#featured-count");
 const articleIndex = document.querySelector("#article-index");
+const articleHoverPreview = document.querySelector("#article-hover-preview");
+const articleHoverImage = articleHoverPreview?.querySelector("img");
+const articleHoverLabel = articleHoverPreview?.querySelector("span");
 const photoGrid = document.querySelector("#photo-grid");
 const timeline = document.querySelector("#timeline");
 const video = document.querySelector("#intro-video");
@@ -315,7 +318,16 @@ function renderAll() {
   renderTimeline();
   splitText(heroTitle);
   splitText(featuredTitle);
+  setupTextReveals();
   observeReveals();
+}
+
+function setupTextReveals() {
+  document
+    .querySelectorAll(
+      ".journal__heading h2, .stills__heading h2, .film__copy h2, .about__statement blockquote, .about__statement > p, .hero__intro",
+    )
+    .forEach((element) => element.classList.add("reveal-text"));
 }
 
 function openArticle(index) {
@@ -451,6 +463,9 @@ function observeReveals() {
   document.querySelectorAll(".reveal-up:not(.is-visible)").forEach((element) => {
     revealObserver.observe(element);
   });
+  document.querySelectorAll(".reveal-text:not(.is-visible)").forEach((element) => {
+    revealObserver.observe(element);
+  });
 }
 
 function setupNavigation() {
@@ -503,6 +518,47 @@ function setupPointerEffects() {
     const rect = row.getBoundingClientRect();
     row.style.setProperty("--pointer-x", `${event.clientX - rect.left}px`);
     row.style.setProperty("--pointer-y", `${event.clientY - rect.top}px`);
+
+    if (articleHoverPreview && articleHoverImage) {
+      const index = Number(row.dataset.index);
+      const article = siteConfig.articles?.[index];
+      const photos = siteConfig.photos || [];
+      const photo = photos.length ? photos[index % photos.length] : null;
+      const nextSource = photo?.path || siteConfig.assets?.background;
+      const fallbackSource = nextSource?.replace("/photos/", "/");
+      if (
+        nextSource &&
+        articleHoverImage.dataset.source !== nextSource
+      ) {
+        articleHoverImage.dataset.source = nextSource;
+        articleHoverImage.onerror = () => {
+          if (
+            fallbackSource &&
+            fallbackSource !== nextSource &&
+            articleHoverImage.dataset.fallbackUsed !== "true"
+          ) {
+            articleHoverImage.dataset.fallbackUsed = "true";
+            articleHoverImage.src = fallbackSource;
+          }
+        };
+        articleHoverImage.dataset.fallbackUsed = "";
+        articleHoverImage.src = nextSource;
+      }
+      articleHoverLabel.textContent = article?.title || "阅读文章";
+      articleHoverPreview.style.left = `${Math.min(
+        event.clientX + 34,
+        innerWidth - 120,
+      )}px`;
+      articleHoverPreview.style.top = `${Math.max(
+        140,
+        Math.min(event.clientY, innerHeight - 140),
+      )}px`;
+      articleHoverPreview.classList.add("is-visible");
+    }
+  });
+
+  articleIndex.addEventListener("pointerleave", () => {
+    articleHoverPreview?.classList.remove("is-visible");
   });
 
   document.querySelectorAll(".action-link").forEach((button) => {
