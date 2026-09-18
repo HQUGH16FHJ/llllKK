@@ -69,6 +69,8 @@ class DepthCarousel {
       });
 
       image.className = "depth-carousel__img";
+      image.loading = "lazy";
+      image.decoding = "async";
       image.src = item.image;
       image.alt = item.alt || "";
       image.draggable = false;
