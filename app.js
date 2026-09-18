@@ -48,6 +48,7 @@ const ambient = document.querySelector(".ambient");
 const ambientImage = document.querySelector(".ambient__image");
 const ambientVideo = document.querySelector("#ambient-video");
 const scrollProgress = document.querySelector("#scroll-progress");
+const pointerGlow = document.querySelector("#pointer-glow");
 const siteHeader = document.querySelector(".site-header");
 const menuToggle = document.querySelector("#menu-toggle");
 const primaryNav = document.querySelector("#primary-nav");
@@ -911,7 +912,60 @@ function setupNavigation() {
 }
 
 function setupPointerEffects() {
-  if (!window.matchMedia("(pointer: fine)").matches) {
+  const finePointer = window.matchMedia("(pointer: fine)").matches;
+
+  if (pointerGlow) {
+    document.addEventListener("pointermove", (event) => {
+      pointerGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+    });
+    document.addEventListener("pointerdown", (event) => {
+      pointerGlow.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+      pointerGlow.classList.add("is-active");
+      if (!finePointer) {
+        window.setTimeout(
+          () => pointerGlow.classList.remove("is-active"),
+          520,
+        );
+      }
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(
+      ".action-link, .featured__read, .music-dock button, .footer__bottom a",
+    );
+    if (!button || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement("span");
+    ripple.className = "interaction-ripple";
+    ripple.style.left = `${event.clientX - rect.left}px`;
+    ripple.style.top = `${event.clientY - rect.top}px`;
+    button.append(ripple);
+    window.setTimeout(() => ripple.remove(), 650);
+  });
+
+  if (!finePointer) {
+    document.addEventListener("pointerdown", (event) => {
+      const element = event.target.closest(
+        ".hero__visual-frame, .featured__preview, .video-stage, .about__facts",
+      );
+      if (!element) {
+        return;
+      }
+      const rect = element.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      element.style.setProperty("--tilt-y", `${x * 4}deg`);
+      element.style.setProperty("--tilt-x", `${y * -4}deg`);
+      element.style.setProperty("--tilt-scale", "1.008");
+      window.setTimeout(() => {
+        element.style.setProperty("--tilt-y", "0deg");
+        element.style.setProperty("--tilt-x", "0deg");
+        element.style.setProperty("--tilt-scale", "1");
+      }, 360);
+    });
     return;
   }
 
@@ -967,17 +1021,42 @@ function setupPointerEffects() {
     articleHoverPreview?.classList.remove("is-visible");
   });
 
-  document.querySelectorAll(".action-link").forEach((button) => {
+  const magneticElements = document.querySelectorAll(
+    ".action-link, .primary-nav a, .featured__read, .footer__bottom a, .music-dock button",
+  );
+  magneticElements.forEach((button) => {
     button.addEventListener("pointermove", (event) => {
       const rect = button.getBoundingClientRect();
-      const x = (event.clientX - rect.left - rect.width / 2) * 0.08;
-      const y = (event.clientY - rect.top - rect.height / 2) * 0.08;
-      button.style.transform = `translate(${x}px, ${y}px)`;
+      const x = (event.clientX - rect.left - rect.width / 2) * 0.14;
+      const y = (event.clientY - rect.top - rect.height / 2) * 0.14;
+      button.style.setProperty("--magnetic-x", `${x}px`);
+      button.style.setProperty("--magnetic-y", `${y}px`);
     });
     button.addEventListener("pointerleave", () => {
-      button.style.transform = "";
+      button.style.setProperty("--magnetic-x", "0px");
+      button.style.setProperty("--magnetic-y", "0px");
     });
   });
+
+  const tiltElements = document.querySelectorAll(
+    ".hero__visual-frame, .featured__preview, .video-stage, .about__facts",
+  );
+  tiltElements.forEach((element) => {
+    element.addEventListener("pointermove", (event) => {
+      const rect = element.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5;
+      const y = (event.clientY - rect.top) / rect.height - 0.5;
+      element.style.setProperty("--tilt-y", `${x * 6}deg`);
+      element.style.setProperty("--tilt-x", `${y * -6}deg`);
+      element.style.setProperty("--tilt-scale", "1.012");
+    });
+    element.addEventListener("pointerleave", () => {
+      element.style.setProperty("--tilt-y", "0deg");
+      element.style.setProperty("--tilt-x", "0deg");
+      element.style.setProperty("--tilt-scale", "1");
+    });
+  });
+
 }
 
 articleIndex.addEventListener("click", (event) => {
