@@ -151,7 +151,7 @@ img {
 
 .button {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 9px;
@@ -185,6 +185,7 @@ img {
 .button--primary {
   color: #fff;
   background: var(--accent);
+  box-shadow: 0 8px 22px rgb(200 77 43 / 22%);
 }
 
 .button--primary:hover {
@@ -192,13 +193,15 @@ img {
 }
 
 .button--ghost {
-  border-color: var(--line);
-  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--ink);
+  background: #fff;
 }
 
 .button--ghost:hover {
-  border-color: var(--line-strong);
-  background: #fff;
+  border-color: var(--ink);
+  color: #fff;
+  background: var(--ink);
 }
 
 .admin-layout {
@@ -224,7 +227,7 @@ img {
 
 .admin-sidebar nav button {
   display: flex;
-  min-height: 44px;
+  min-height: 50px;
   align-items: center;
   gap: 12px;
   padding: 0 13px;
@@ -246,7 +249,7 @@ img {
 
 .admin-sidebar nav button.is-active {
   color: #fff;
-  background: var(--ink);
+  background: var(--accent);
 }
 
 .admin-sidebar nav svg {
@@ -259,9 +262,10 @@ img {
   gap: 9px;
   margin-top: auto;
   padding: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  background: #ebe8e0;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(21 26 24 / 8%);
 }
 
 .admin-sidebar__security label {
@@ -281,7 +285,15 @@ img {
 
 .admin-sidebar__security .button {
   width: 100%;
-  min-height: 36px;
+  min-height: 42px;
+  border-color: var(--ink);
+  color: #fff;
+  background: var(--ink);
+}
+
+.admin-sidebar__security .button:hover {
+  border-color: var(--accent);
+  background: var(--accent);
 }
 
 .admin-sidebar__security p {
@@ -759,7 +771,7 @@ img {
     left: 16px;
     z-index: 45;
     min-height: 52px;
-    box-shadow: 0 16px 42px rgb(21 26 24 / 28%);
+    box-shadow: 0 16px 42px rgb(200 77 43 / 34%);
   }
 
   .admin-sidebar {
