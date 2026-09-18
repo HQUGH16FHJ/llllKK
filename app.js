@@ -10,8 +10,12 @@ const defaultSiteConfig = {
   current: "一件需要慢慢完成的作品",
   focus: "记录、设计与日常观察",
   reading: "一本关于城市与人的书",
+  heroPhotoIndex: 0,
+  featuredArticleIndex: 0,
   assets: {
     background: "./assets/background.jpg",
+    backgroundVideo:
+      "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260723_145606_ab143199-b593-4941-bb1b-9afca215416b.mp4",
     avatar: "./assets/avatar.jpg",
     video: "./assets/intro.mp4",
     poster: "./assets/video-poster.jpg",
@@ -30,6 +34,8 @@ const defaultSiteConfig = {
 let siteConfig = window.SITE_CONTENT || defaultSiteConfig;
 
 const pageLoader = document.querySelector("#page-loader");
+const ambient = document.querySelector(".ambient");
+const ambientVideo = document.querySelector("#ambient-video");
 const scrollProgress = document.querySelector("#scroll-progress");
 const siteHeader = document.querySelector(".site-header");
 const menuToggle = document.querySelector("#menu-toggle");
@@ -51,6 +57,8 @@ const articleHoverImage = articleHoverPreview?.querySelector("img");
 const articleHoverLabel = articleHoverPreview?.querySelector("span");
 const photoGrid = document.querySelector("#photo-grid");
 const timeline = document.querySelector("#timeline");
+const depthCarouselHost = document.querySelector("#depth-carousel");
+const heroRoleType = document.querySelector("#hero-role-type");
 const video = document.querySelector("#intro-video");
 const videoShell = document.querySelector("[data-video-shell]");
 const videoPlaceholder = document.querySelector("#video-placeholder");
@@ -80,6 +88,8 @@ const lightboxNext = document.querySelector("#lightbox-next");
 let currentArticleIndex = -1;
 let currentPhotoIndex = -1;
 let pointerStartX = null;
+let depthCarouselInstance = null;
+let roleTyper = null;
 
 const currentYear = new Date().getFullYear();
 document.querySelector("#footer-year").textContent = currentYear;
@@ -171,7 +181,11 @@ function renderArticles() {
     articleIndex.append(row);
   });
 
-  const featured = articles[0];
+  const featuredIndex = Math.min(
+    Math.max(Number(siteConfig.featuredArticleIndex) || 0, 0),
+    articles.length - 1,
+  );
+  const featured = articles[featuredIndex];
   featuredDate.textContent = featured.date || "";
   featuredTitle.textContent = featured.title || "未命名文章";
   featuredExcerpt.textContent = featured.excerpt || "";
@@ -192,7 +206,7 @@ function renderTimeline() {
     const text = document.createElement("p");
 
     article.className = "timeline__item";
-    time.textContent = index === 0 ? "现在" : `${2026 - index}`;
+    time.textContent = item.year || (index === 0 ? "现在" : `${2026 - index}`);
     heading.textContent = item.title || "";
     text.textContent = item.description || "";
     copy.append(heading, text);
@@ -221,7 +235,11 @@ function renderMedia() {
   );
   const avatar = absoluteAsset(siteConfig.assets?.avatar, "./assets/avatar.jpg");
   const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
-  const heroPhoto = photos[0];
+  const heroPhotoIndex = Math.min(
+    Math.max(Number(siteConfig.heroPhotoIndex) || 0, 0),
+    Math.max(photos.length - 1, 0),
+  );
+  const heroPhoto = photos[heroPhotoIndex];
   const heroPath = heroPhoto?.path || background;
   const heroFallback = heroPath.replace("/photos/", "/");
 
@@ -231,6 +249,14 @@ function renderMedia() {
   );
   document.querySelector(".ambient__image").style.backgroundImage =
     `url("${background}")`;
+  ambientVideo.poster = background;
+  ambientVideo.src = siteConfig.assets?.backgroundVideo || "";
+
+  if (siteConfig.assets?.backgroundVideo) {
+    ambientVideo.load();
+  } else {
+    ambient.classList.remove("has-video");
+  }
 
   imageFallback(heroImage, heroPath, heroFallback || background);
   heroPhotoCaption.textContent =
@@ -263,6 +289,20 @@ function renderMedia() {
 
   audio.src = absoluteAsset(siteConfig.assets?.music, "./assets/music.mp3");
 }
+
+ambientVideo.addEventListener("canplay", () => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+  ambientVideo
+    .play()
+    .then(() => ambient.classList.add("has-video"))
+    .catch(() => ambient.classList.remove("has-video"));
+});
+
+ambientVideo.addEventListener("error", () => {
+  ambient.classList.remove("has-video");
+});
 
 function renderPhotos() {
   photoGrid.replaceChildren();
@@ -316,10 +356,79 @@ function renderAll() {
   renderArticles();
   renderPhotos();
   renderTimeline();
+  renderRoleType();
+  renderDepthCarousel();
   splitText(heroTitle);
   splitText(featuredTitle);
   setupTextReveals();
   observeReveals();
+}
+
+function renderRoleType() {
+  if (!heroRoleType) {
+    return;
+  }
+
+  const texts = [
+    siteConfig.role,
+    siteConfig.status,
+    siteConfig.focus,
+  ].filter(Boolean);
+
+  if (roleTyper) {
+    roleTyper.texts = texts;
+    return;
+  }
+
+  if (typeof window.TextType !== "function") {
+    heroRoleType.textContent = siteConfig.role || "";
+    return;
+  }
+
+  roleTyper = new window.TextType(heroRoleType, {
+    texts,
+    typingSpeed: 68,
+    deletingSpeed: 34,
+    pauseDuration: 1600,
+    cursorCharacter: "|",
+  });
+}
+
+function renderDepthCarousel() {
+  if (!depthCarouselHost || typeof window.DepthCarousel !== "function") {
+    return;
+  }
+
+  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
+  depthCarouselInstance?.destroy();
+
+  if (!photos.length) {
+    depthCarouselHost.innerHTML =
+      '<p class="empty-copy">照片正在整理中。</p>';
+    return;
+  }
+
+  depthCarouselInstance = new window.DepthCarousel(depthCarouselHost, {
+    items: photos.map((photo, index) => ({
+      image: photo.path,
+      fallback: photo.path.replace("/photos/", "/"),
+      alt: photo.alt || photo.caption || `照片 ${index + 1}`,
+      caption: photo.caption || "",
+    })),
+    cardWidth: Math.min(330, Math.max(250, window.innerWidth * 0.32)),
+    cardHeight: Math.min(420, Math.max(310, window.innerWidth * 0.4)),
+    radius: 14,
+    depth: 220,
+    spread: 90,
+    tilt: 22,
+    tiltDirection: "right",
+    visibleCards: 4,
+    falloff: 0.2,
+    blur: 6,
+    autoplay: true,
+    loop: true,
+    onSelect: (index) => openLightbox(index),
+  });
 }
 
 function setupTextReveals() {
@@ -435,7 +544,18 @@ async function syncCloudContent() {
     if (!cloudContent?.name || !Array.isArray(cloudContent.articles)) {
       return;
     }
-    siteConfig = cloudContent;
+    siteConfig = {
+      ...defaultSiteConfig,
+      ...cloudContent,
+      assets: {
+        ...defaultSiteConfig.assets,
+        ...(cloudContent.assets || {}),
+      },
+      music: {
+        ...defaultSiteConfig.music,
+        ...(cloudContent.music || {}),
+      },
+    };
     renderAll();
   } catch {
     // The static content remains usable if the management API is unavailable.
@@ -581,8 +701,12 @@ articleIndex.addEventListener("click", (event) => {
   }
 });
 
-featuredRead.addEventListener("click", () => openArticle(0));
-featuredPreview.addEventListener("click", () => openLightbox(0));
+featuredRead.addEventListener("click", () =>
+  openArticle(Number(siteConfig.featuredArticleIndex) || 0),
+);
+featuredPreview.addEventListener("click", () =>
+  openLightbox(Number(siteConfig.heroPhotoIndex) || 0),
+);
 
 photoGrid.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-photo-index]");
