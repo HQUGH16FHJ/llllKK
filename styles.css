@@ -2935,11 +2935,7 @@ body.is-loaded .ambient__image {
 
 @media (pointer: coarse), (max-width: 900px) {
   .pointer-glow {
-    width: 260px;
-    height: 260px;
-    margin: -130px 0 0 -130px;
-    opacity: 0;
-    transition: opacity 180ms ease;
+    display: none;
   }
 
   .action-link:active,
