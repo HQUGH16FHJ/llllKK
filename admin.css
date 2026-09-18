@@ -613,6 +613,45 @@ img {
   white-space: nowrap;
 }
 
+.music-upload-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.music-upload-panel > div {
+  display: grid;
+  gap: 4px;
+}
+
+.music-upload-panel strong {
+  font-size: 0.86rem;
+}
+
+.music-upload-panel span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.music-upload-panel input {
+  max-width: 340px;
+}
+
+.track-path {
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .asset-list {
   border-top: 1px solid var(--line);
 }
@@ -857,6 +896,15 @@ img {
   .asset-row__url {
     grid-column: 1 / -1;
     grid-template-columns: 1fr;
+  }
+
+  .music-upload-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .music-upload-panel input {
+    max-width: 100%;
   }
 
   .admin-toast {
