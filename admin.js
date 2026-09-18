@@ -1,9 +1,13 @@
 const articleList = document.querySelector("#article-list");
+const timelineList = document.querySelector("#timeline-list");
 const photoList = document.querySelector("#photo-list");
 const saveButton = document.querySelector("#save-content");
 const downloadButton = document.querySelector("#download-content");
 const addArticleButton = document.querySelector("#add-article");
+const addTimelineButton = document.querySelector("#add-timeline");
 const addPhotoButton = document.querySelector("#add-photo");
+const heroPhotoSelect = document.querySelector("#hero-photo-select");
+const featuredArticleSelect = document.querySelector("#featured-article-select");
 const statusDot = document.querySelector("#status-dot");
 const statusText = document.querySelector("#status-text");
 const toast = document.querySelector("#admin-toast");
@@ -17,6 +21,7 @@ let toastTimer = null;
 
 const assetTargets = {
   background: "./assets/background.jpg",
+  backgroundVideo: "./assets/background-video.mp4",
   avatar: "./assets/avatar.jpg",
   poster: "./assets/video-poster.jpg",
   video: "./assets/intro.mp4",
@@ -85,6 +90,42 @@ function downloadContentScript() {
   showToast("备份文件已下载", "success");
 }
 
+function ensureContentShape() {
+  content.articles = Array.isArray(content.articles) ? content.articles : [];
+  content.photos = Array.isArray(content.photos) ? content.photos : [];
+  content.timeline = Array.isArray(content.timeline) ? content.timeline : [];
+  content.heroPhotoIndex = Math.min(
+    Math.max(Number(content.heroPhotoIndex) || 0, 0),
+    Math.max(content.photos.length - 1, 0),
+  );
+  content.featuredArticleIndex = Math.min(
+    Math.max(Number(content.featuredArticleIndex) || 0, 0),
+    Math.max(content.articles.length - 1, 0),
+  );
+}
+
+function renderIndexSelects() {
+  heroPhotoSelect.innerHTML = content.photos
+    .map(
+      (photo, index) =>
+        `<option value="${index}">${escapeHtml(
+          photo.caption || `照片 ${index + 1}`,
+        )}</option>`,
+    )
+    .join("");
+  heroPhotoSelect.value = String(content.heroPhotoIndex || 0);
+
+  featuredArticleSelect.innerHTML = content.articles
+    .map(
+      (article, index) =>
+        `<option value="${index}">${escapeHtml(
+          article.title || `文章 ${index + 1}`,
+        )}</option>`,
+    )
+    .join("");
+  featuredArticleSelect.value = String(content.featuredArticleIndex || 0);
+}
+
 function fillProfileFields() {
   document.querySelectorAll("[data-field]").forEach((field) => {
     field.value = content[field.dataset.field] || "";
@@ -92,6 +133,14 @@ function fillProfileFields() {
 
   document.querySelectorAll("[data-music-field]").forEach((field) => {
     field.value = content.music?.[field.dataset.musicField] || "";
+  });
+
+  document.querySelectorAll("[data-index-field]").forEach((field) => {
+    field.value = String(content[field.dataset.indexField] || 0);
+  });
+
+  document.querySelectorAll("[data-asset-url]").forEach((field) => {
+    field.value = content.assets?.[field.dataset.assetUrl] || "";
   });
 }
 
@@ -130,6 +179,45 @@ function renderArticles() {
             <label class="editor-card__wide">
               <span>正文，段落之间空一行</span>
               <textarea rows="10" data-article-index="${index}" data-article-prop="body">${escapeHtml(article.body.join("\n\n"))}</textarea>
+            </label>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function renderTimeline() {
+  timelineList.innerHTML = content.timeline
+    .map(
+      (item, index) => `
+        <article class="editor-card" data-timeline-card="${index}">
+          <header class="editor-card__header">
+            <strong>${escapeHtml(item.title || `时间节点 ${index + 1}`)}</strong>
+            <div class="editor-card__actions">
+              <button class="icon-button" type="button" data-timeline-action="up" data-index="${index}" aria-label="上移节点" ${index === 0 ? "disabled" : ""}>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg>
+              </button>
+              <button class="icon-button" type="button" data-timeline-action="down" data-index="${index}" aria-label="下移节点" ${index === content.timeline.length - 1 ? "disabled" : ""}>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <button class="icon-button icon-button--danger" type="button" data-timeline-action="delete" data-index="${index}" aria-label="删除节点">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div>
+          </header>
+          <div class="editor-card__body">
+            <label>
+              <span>年份或时间</span>
+              <input type="text" value="${escapeHtml(item.year || "")}" data-timeline-index="${index}" data-timeline-prop="year" />
+            </label>
+            <label>
+              <span>节点标题</span>
+              <input type="text" value="${escapeHtml(item.title || "")}" data-timeline-index="${index}" data-timeline-prop="title" />
+            </label>
+            <label class="editor-card__wide">
+              <span>节点说明</span>
+              <textarea rows="4" data-timeline-index="${index}" data-timeline-prop="description">${escapeHtml(item.description || "")}</textarea>
             </label>
           </div>
         </article>
@@ -218,8 +306,11 @@ function renderAssetPreviews() {
 }
 
 function renderAll() {
+  ensureContentShape();
+  renderIndexSelects();
   fillProfileFields();
   renderArticles();
+  renderTimeline();
   renderPhotos();
   renderAssetPreviews();
 }
@@ -353,6 +444,21 @@ function moveItem(list, index, direction) {
     return;
   }
   [list[index], list[nextIndex]] = [list[nextIndex], list[index]];
+
+  if (list === content.photos) {
+    if (content.heroPhotoIndex === index) {
+      content.heroPhotoIndex = nextIndex;
+    } else if (content.heroPhotoIndex === nextIndex) {
+      content.heroPhotoIndex = index;
+    }
+  } else if (list === content.articles) {
+    if (content.featuredArticleIndex === index) {
+      content.featuredArticleIndex = nextIndex;
+    } else if (content.featuredArticleIndex === nextIndex) {
+      content.featuredArticleIndex = index;
+    }
+  }
+
   markDirty();
   renderAll();
 }
@@ -368,12 +474,18 @@ document.querySelectorAll("[data-tab]").forEach((button) => {
 
 document.addEventListener("input", (event) => {
   const field = event.target.closest("[data-field]");
+  const indexField = event.target.closest("[data-index-field]");
   const musicField = event.target.closest("[data-music-field]");
   const articleField = event.target.closest("[data-article-prop]");
+  const timelineField = event.target.closest("[data-timeline-prop]");
   const photoField = event.target.closest("[data-photo-prop]");
+  const assetUrlField = event.target.closest("[data-asset-url]");
 
   if (field && content) {
     content[field.dataset.field] = field.value;
+    markDirty();
+  } else if (indexField && content) {
+    content[indexField.dataset.indexField] = Number(indexField.value) || 0;
     markDirty();
   } else if (musicField && content) {
     content.music[musicField.dataset.musicField] = musicField.value;
@@ -386,9 +498,34 @@ document.addEventListener("input", (event) => {
         ? articleField.value.split(/\n\s*\n/).map((item) => item.trim()).filter(Boolean)
         : articleField.value;
     markDirty();
+  } else if (timelineField && content) {
+    const item = content.timeline[Number(timelineField.dataset.timelineIndex)];
+    item[timelineField.dataset.timelineProp] = timelineField.value;
+    markDirty();
   } else if (photoField && content) {
     content.photos[Number(photoField.dataset.photoIndex)][photoField.dataset.photoProp] = photoField.value;
     markDirty();
+  } else if (assetUrlField && content) {
+    content.assets[assetUrlField.dataset.assetUrl] = assetUrlField.value.trim();
+    markDirty();
+  }
+});
+
+timelineList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-timeline-action]");
+  if (!button || !content) {
+    return;
+  }
+
+  const index = Number(button.dataset.index);
+  if (button.dataset.timelineAction === "up") {
+    moveItem(content.timeline, index, -1);
+  } else if (button.dataset.timelineAction === "down") {
+    moveItem(content.timeline, index, 1);
+  } else if (button.dataset.timelineAction === "delete" && window.confirm("确定删除这个时间节点吗？")) {
+    content.timeline.splice(index, 1);
+    markDirty();
+    renderAll();
   }
 });
 
@@ -405,6 +542,10 @@ articleList.addEventListener("click", (event) => {
     moveItem(content.articles, index, 1);
   } else if (button.dataset.articleAction === "delete" && window.confirm("确定删除这篇文章吗？")) {
     content.articles.splice(index, 1);
+    content.featuredArticleIndex = Math.min(
+      Math.max(content.featuredArticleIndex, 0),
+      Math.max(content.articles.length - 1, 0),
+    );
     markDirty();
     renderAll();
   }
@@ -423,6 +564,10 @@ photoList.addEventListener("click", (event) => {
     moveItem(content.photos, index, 1);
   } else if (button.dataset.photoAction === "delete" && window.confirm("确定从网站移除这张照片吗？")) {
     content.photos.splice(index, 1);
+    content.heroPhotoIndex = Math.min(
+      Math.max(content.heroPhotoIndex, 0),
+      Math.max(content.photos.length - 1, 0),
+    );
     markDirty();
     renderAll();
   } else if (button.dataset.photoAction === "upload") {
@@ -503,6 +648,19 @@ addArticleButton.addEventListener("click", () => {
   document.querySelector('[data-panel="articles"]')?.scrollIntoView({ behavior: "smooth" });
 });
 
+addTimelineButton.addEventListener("click", () => {
+  if (!content) {
+    return;
+  }
+  content.timeline.unshift({
+    year: new Date().getFullYear().toString(),
+    title: "新的时间节点",
+    description: "在这里补充这一阶段发生的事情。",
+  });
+  markDirty();
+  renderAll();
+});
+
 addPhotoButton.addEventListener("click", () => {
   if (!content) {
     return;
@@ -514,6 +672,7 @@ addPhotoButton.addEventListener("click", () => {
     layout: "standard",
     alt: "新的照片",
   });
+  content.heroPhotoIndex += 1;
   markDirty();
   renderAll();
 });
