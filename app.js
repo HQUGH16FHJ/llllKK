@@ -250,6 +250,17 @@ function renderMedia() {
   const heroPhoto = photos[heroPhotoIndex];
   const heroPath = heroPhoto?.path || background;
   const heroFallback = heroPath.replace("/photos/", "/");
+  const articles = Array.isArray(siteConfig.articles) ? siteConfig.articles : [];
+  const featuredArticleIndex = Math.min(
+    Math.max(Number(siteConfig.featuredArticleIndex) || 0, 0),
+    Math.max(articles.length - 1, 0),
+  );
+  const featuredArticle = articles[featuredArticleIndex];
+  const featuredLinkedPhoto = featuredArticle?.linkedPhotoId
+    ? photos.find((photo) => photo.id === featuredArticle.linkedPhotoId)
+    : null;
+  const featuredPath = featuredLinkedPhoto?.path || heroPath;
+  const featuredFallback = featuredPath.replace("/photos/", "/");
 
   document.documentElement.style.setProperty(
     "--ambient-image",
@@ -276,7 +287,11 @@ function renderMedia() {
   imageFallback(heroImage, heroPath, heroFallback || background);
   heroPhotoCaption.textContent =
     heroPhoto?.caption || siteConfig.status || "生活切片";
-  imageFallback(featuredImage, heroPath, heroFallback || background);
+  imageFallback(
+    featuredImage,
+    featuredPath,
+    featuredFallback || background,
+  );
 
   document.querySelectorAll("[data-avatar]").forEach((image) => {
     imageFallback(image, avatar, "./assets/avatar.jpg");
@@ -448,7 +463,21 @@ function openArticle(index) {
   articleReaderDate.textContent = article.date || "";
   articleReaderTitle.textContent = article.title || "";
   articleReaderLead.textContent = article.excerpt || "";
+  const linkedPhoto = article.linkedPhotoId
+    ? siteConfig.photos?.find((photo) => photo.id === article.linkedPhotoId)
+    : null;
+  const articleMedia = linkedPhoto
+    ? document.createElement("figure")
+    : null;
+  if (articleMedia) {
+    const image = document.createElement("img");
+    articleMedia.className = "article-reader__media";
+    image.src = linkedPhoto.path;
+    image.alt = linkedPhoto.alt || linkedPhoto.caption || "";
+    articleMedia.append(image);
+  }
   articleReaderBody.replaceChildren(
+    ...(articleMedia ? [articleMedia] : []),
     ...(article.body || []).map((paragraph) => {
       const p = document.createElement("p");
       p.textContent = paragraph;
