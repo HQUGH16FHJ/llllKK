@@ -1301,24 +1301,43 @@ cleanupMediaButton.addEventListener("click", async () => {
     return;
   }
 
-  if (
-    !window.confirm(
-      "只会删除没有被照片、文章、音乐和站点素材引用的云端文件。确定开始清理吗？",
-    )
-  ) {
-    return;
-  }
-
   cleanupMediaButton.disabled = true;
-  storageCleanupStatus.textContent = "正在检查并清理未使用文件...";
-  setStatus("正在清理云端存储");
+  storageCleanupStatus.textContent = "正在扫描未使用文件...";
+  setStatus("正在扫描云端存储");
 
   try {
+    const scan = await requestJson("/api/cleanup-media", {
+      method: "POST",
+      body: JSON.stringify({ dryRun: true }),
+    });
+
+    if (!scan.unusedCount) {
+      storageCleanupStatus.textContent = `扫描完成：没有未使用文件，保留 ${scan.kept} 个正在使用的文件。`;
+      setStatus("没有需要清理的媒体", "ready");
+      showToast("没有发现未使用的云端文件", "success");
+      return;
+    }
+
+    const deferredMessage = scan.deferred
+      ? `，另有 ${scan.deferred} 个新文件受保护暂不删除`
+      : "";
+    if (
+      !window.confirm(
+        `发现 ${scan.unusedCount} 个未使用文件${deferredMessage}。确定删除这些文件吗？`,
+      )
+    ) {
+      storageCleanupStatus.textContent = `扫描完成：${scan.unusedCount} 个未使用文件尚未删除。`;
+      setStatus("已取消媒体清理", "");
+      return;
+    }
+
     const result = await requestJson("/api/cleanup-media", {
       method: "POST",
-      body: "{}",
+      body: JSON.stringify({ dryRun: false }),
     });
-    storageCleanupStatus.textContent = `清理完成：删除 ${result.deleted} 个文件，保留 ${result.kept} 个正在使用的文件。`;
+    storageCleanupStatus.textContent = `清理完成：删除 ${result.deleted} 个文件，保留 ${result.kept} 个正在使用的文件${
+      result.deferred ? `，暂缓 ${result.deferred} 个新文件` : ""
+    }。`;
     setStatus("云端存储清理完成", "ready");
     showToast(`已释放 ${result.deleted} 个未使用文件`, "success");
   } catch (error) {
