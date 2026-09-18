@@ -295,6 +295,7 @@ class DepthCarousel {
       card.style.zIndex = String(Math.round(2000 - distance * 20));
       card.style.pointerEvents =
         shown && opacity > 0.05 ? "auto" : "none";
+      card.classList.toggle("is-focus", Math.abs(distance) < 0.5);
       tint.style.opacity = Math.min(
         Math.max(back * this.falloff * 1.25, 0),
         0.86,
