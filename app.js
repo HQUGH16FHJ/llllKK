@@ -48,6 +48,7 @@ const ambient = document.querySelector(".ambient");
 const ambientImage = document.querySelector(".ambient__image");
 const ambientVideo = document.querySelector("#ambient-video");
 const scrollProgress = document.querySelector("#scroll-progress");
+const sectionRailLinks = [...document.querySelectorAll("#section-rail a")];
 const pointerGlow = document.querySelector("#pointer-glow");
 const siteHeader = document.querySelector(".site-header");
 const menuToggle = document.querySelector("#menu-toggle");
@@ -460,6 +461,7 @@ function renderAll() {
   setupTextReveals();
   observeReveals();
   updateScrollTextHighlight();
+  updateKineticHeadings();
 }
 
 function renderRoleType() {
@@ -772,6 +774,29 @@ function updateScrollTextHighlight() {
   });
 }
 
+function updateKineticHeadings() {
+  document
+    .querySelectorAll(
+      ".journal__heading h2, .stills__heading h2, .film__copy h2, .about__statement blockquote",
+    )
+    .forEach((heading) => {
+      const rect = heading.getBoundingClientRect();
+      const progress = Math.min(
+        1,
+        Math.max(
+          0,
+          (window.innerHeight - rect.top) /
+            Math.max(window.innerHeight + rect.height, 1),
+        ),
+      );
+      heading.style.setProperty("--heading-scale", `${0.95 + progress * 0.05}`);
+      heading.style.setProperty(
+        "--heading-shift",
+        `${(1 - progress) * 26}px`,
+      );
+    });
+}
+
 function observeTextMotion(root = document) {
   if (!textMotionObserver) {
     textMotionObserver = new IntersectionObserver(
@@ -1035,6 +1060,7 @@ function setupNavigation() {
   const sections = [...document.querySelectorAll("main section[id]")];
   const navLinks = [...document.querySelectorAll(".primary-nav a")];
   let scrollAnimationFrame = null;
+  let lastActiveSection = "";
 
   const scrollToSection = (target) => {
     if (!target) {
@@ -1099,9 +1125,26 @@ function setupNavigation() {
       activeSection = sections[sections.length - 1];
     }
 
-    document.documentElement.dataset.activeSection = activeSection?.id || "home";
+    const nextSection = activeSection?.id || "home";
+    if (lastActiveSection && lastActiveSection !== nextSection) {
+      document.body.classList.remove("is-section-switching");
+      void document.body.offsetWidth;
+      document.body.classList.add("is-section-switching");
+      window.setTimeout(
+        () => document.body.classList.remove("is-section-switching"),
+        620,
+      );
+    }
+    lastActiveSection = nextSection;
+    document.documentElement.dataset.activeSection = nextSection;
 
     navLinks.forEach((link) => {
+      link.classList.toggle(
+        "is-active",
+        link.getAttribute("href") === `#${activeSection?.id}`,
+      );
+    });
+    sectionRailLinks.forEach((link) => {
       link.classList.toggle(
         "is-active",
         link.getAttribute("href") === `#${activeSection?.id}`,
@@ -1684,6 +1727,7 @@ window.addEventListener(
       }
       revealVisibleText();
       updateScrollTextHighlight();
+      updateKineticHeadings();
       ticking = false;
     });
   },
