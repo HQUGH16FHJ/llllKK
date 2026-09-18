@@ -1,11 +1,14 @@
 const articleList = document.querySelector("#article-list");
 const timelineList = document.querySelector("#timeline-list");
 const photoList = document.querySelector("#photo-list");
+const trackList = document.querySelector("#track-list");
 const saveButton = document.querySelector("#save-content");
 const downloadButton = document.querySelector("#download-content");
 const addArticleButton = document.querySelector("#add-article");
 const addTimelineButton = document.querySelector("#add-timeline");
 const addPhotoButton = document.querySelector("#add-photo");
+const addTrackButton = document.querySelector("#add-track");
+const musicUploadInput = document.querySelector("#music-upload-input");
 const heroPhotoSelect = document.querySelector("#hero-photo-select");
 const featuredArticleSelect = document.querySelector("#featured-article-select");
 const statusDot = document.querySelector("#status-dot");
@@ -97,6 +100,18 @@ function ensureContentShape() {
   content.articles = Array.isArray(content.articles) ? content.articles : [];
   content.photos = Array.isArray(content.photos) ? content.photos : [];
   content.timeline = Array.isArray(content.timeline) ? content.timeline : [];
+  content.music = content.music || {};
+  content.music.tracks = Array.isArray(content.music.tracks)
+    ? content.music.tracks
+    : content.assets?.music
+      ? [
+          {
+            title: content.music.title || "未命名曲目",
+            artist: content.music.artist || "",
+            path: content.assets.music,
+          },
+        ]
+      : [];
   content.heroPhotoIndex = Math.min(
     Math.max(Number(content.heroPhotoIndex) || 0, 0),
     Math.max(content.photos.length - 1, 0),
@@ -291,6 +306,44 @@ function renderPhotos() {
   });
 }
 
+function renderTracks() {
+  trackList.innerHTML = content.music.tracks
+    .map(
+      (track, index) => `
+        <article class="editor-card" data-track-card="${index}">
+          <header class="editor-card__header">
+            <strong>${escapeHtml(track.title || `曲目 ${index + 1}`)}</strong>
+            <div class="editor-card__actions">
+              <button class="icon-button" type="button" data-track-action="up" data-index="${index}" aria-label="上移曲目" ${index === 0 ? "disabled" : ""}>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg>
+              </button>
+              <button class="icon-button" type="button" data-track-action="down" data-index="${index}" aria-label="下移曲目" ${index === content.music.tracks.length - 1 ? "disabled" : ""}>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <button class="icon-button icon-button--danger" type="button" data-track-action="delete" data-index="${index}" aria-label="删除曲目">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </div>
+          </header>
+          <div class="editor-card__body">
+            <label>
+              <span>曲名</span>
+              <input type="text" value="${escapeHtml(track.title || "")}" data-track-index="${index}" data-track-prop="title" />
+            </label>
+            <label>
+              <span>歌手</span>
+              <input type="text" value="${escapeHtml(track.artist || "")}" data-track-index="${index}" data-track-prop="artist" />
+            </label>
+            <div class="editor-card__wide">
+              <span class="track-path">${escapeHtml(track.path || "尚未上传音乐文件")}</span>
+            </div>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
 function renderAssetPreviews() {
   Object.entries(assetTargets).forEach(([name, target]) => {
     const preview = document.querySelector(`[data-preview="${name}"]`);
@@ -315,6 +368,7 @@ function renderAll() {
   renderArticles();
   renderTimeline();
   renderPhotos();
+  renderTracks();
   renderAssetPreviews();
 }
 
@@ -486,6 +540,7 @@ document.addEventListener("input", (event) => {
   const articleField = event.target.closest("[data-article-prop]");
   const timelineField = event.target.closest("[data-timeline-prop]");
   const photoField = event.target.closest("[data-photo-prop]");
+  const trackField = event.target.closest("[data-track-prop]");
   const assetUrlField = event.target.closest("[data-asset-url]");
 
   if (field && content) {
@@ -512,9 +567,29 @@ document.addEventListener("input", (event) => {
   } else if (photoField && content) {
     content.photos[Number(photoField.dataset.photoIndex)][photoField.dataset.photoProp] = photoField.value;
     markDirty();
+  } else if (trackField && content) {
+    content.music.tracks[Number(trackField.dataset.trackIndex)][trackField.dataset.trackProp] = trackField.value;
+    markDirty();
   } else if (assetUrlField && content) {
     content.assets[assetUrlField.dataset.assetUrl] = assetUrlField.value.trim();
     markDirty();
+  }
+});
+
+trackList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-track-action]");
+  if (!button || !content) {
+    return;
+  }
+  const index = Number(button.dataset.index);
+  if (button.dataset.trackAction === "up") {
+    moveItem(content.music.tracks, index, -1);
+  } else if (button.dataset.trackAction === "down") {
+    moveItem(content.music.tracks, index, 1);
+  } else if (button.dataset.trackAction === "delete" && window.confirm("确定删除这首音乐吗？")) {
+    content.music.tracks.splice(index, 1);
+    markDirty();
+    renderAll();
   }
 });
 
@@ -640,6 +715,44 @@ document.querySelectorAll("[data-asset-upload]").forEach((input) => {
   });
 });
 
+musicUploadInput.addEventListener("change", async () => {
+  if (!content || !musicUploadInput.files?.length) {
+    return;
+  }
+
+  const files = [...musicUploadInput.files];
+  musicUploadInput.disabled = true;
+  setStatus(`正在上传 ${files.length} 首音乐`);
+
+  try {
+    for (const [index, file] of files.entries()) {
+      setStatus(`正在上传第 ${index + 1} / ${files.length} 首音乐`);
+      const result = await uploadFile(file, {
+        kind: "media",
+        target: `./assets/music-${Date.now()}-${index}.mp3`,
+      });
+      content.music.tracks.push({
+        title: file.name.replace(/\.[^.]+$/, ""),
+        artist: siteConfigFallbackArtist(),
+        path: result.path,
+      });
+    }
+    musicUploadInput.value = "";
+    dirty = true;
+    renderAll();
+    await saveContent();
+  } catch (error) {
+    setStatus("音乐上传失败", "error");
+    showToast(error.message, "error");
+  } finally {
+    musicUploadInput.disabled = false;
+  }
+});
+
+function siteConfigFallbackArtist() {
+  return content?.music?.artist || content?.name || "";
+}
+
 addArticleButton.addEventListener("click", () => {
   if (!content) {
     return;
@@ -653,6 +766,19 @@ addArticleButton.addEventListener("click", () => {
   markDirty();
   renderAll();
   document.querySelector('[data-panel="articles"]')?.scrollIntoView({ behavior: "smooth" });
+});
+
+addTrackButton.addEventListener("click", () => {
+  if (!content) {
+    return;
+  }
+  content.music.tracks.unshift({
+    title: "新的曲目",
+    artist: content.name || "",
+    path: "",
+  });
+  markDirty();
+  renderAll();
 });
 
 addTimelineButton.addEventListener("click", () => {
