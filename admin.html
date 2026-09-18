@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>内容管理后台</title>
-    <link rel="stylesheet" href="./admin.css?v=20260918-6" />
+    <link rel="stylesheet" href="./admin.css?v=20260918-7" />
   </head>
   <body>
     <header class="admin-header">
@@ -262,6 +262,14 @@
             <span>图片会自动压缩，单个文件上限为 12MB</span>
           </div>
 
+          <label class="background-mode-control">
+            <span>首页背景模式</span>
+            <select id="background-mode-select">
+              <option value="video">视频背景</option>
+              <option value="image">图片背景</option>
+            </select>
+          </label>
+
           <div class="asset-list">
             <article class="asset-row">
               <div class="asset-row__copy">
@@ -333,6 +341,6 @@
 
     <div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
 
-    <script src="./admin.js?v=20260918-6"></script>
+    <script src="./admin.js?v=20260918-7"></script>
   </body>
 </html>
