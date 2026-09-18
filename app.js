@@ -898,37 +898,83 @@ function setupNavigation() {
   const sections = [...document.querySelectorAll("main section[id]")];
   const navLinks = [...document.querySelectorAll(".primary-nav a")];
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const active = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (!active) {
-        return;
-      }
-      navLinks.forEach((link) => {
-        link.classList.toggle(
-          "is-active",
-          link.getAttribute("href") === `#${active.target.id}`,
-        );
-      });
-    },
-    { rootMargin: "-25% 0px -55% 0px", threshold: [0, 0.2, 0.45] },
-  );
+  let navTicking = false;
+  const updateActiveNav = () => {
+    const offset = siteHeader.getBoundingClientRect().height + 32;
+    let activeSection = sections[0];
 
-  sections.forEach((section) => observer.observe(section));
+    sections.forEach((section) => {
+      if (section.getBoundingClientRect().top <= offset) {
+        activeSection = section;
+      }
+    });
+
+    const atPageEnd =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 4;
+    if (atPageEnd) {
+      activeSection = sections[sections.length - 1];
+    }
+
+    navLinks.forEach((link) => {
+      link.classList.toggle(
+        "is-active",
+        link.getAttribute("href") === `#${activeSection?.id}`,
+      );
+    });
+  };
+
+  const scheduleActiveNav = () => {
+    if (navTicking) {
+      return;
+    }
+    navTicking = true;
+    window.requestAnimationFrame(() => {
+      updateActiveNav();
+      navTicking = false;
+    });
+  };
 
   menuToggle.addEventListener("click", () => {
     const open = primaryNav.classList.toggle("is-open");
     menuToggle.setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("is-nav-open", open);
   });
 
   primaryNav.addEventListener("click", (event) => {
     if (event.target.matches("a")) {
       primaryNav.classList.remove("is-open");
       menuToggle.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("is-nav-open");
     }
   });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (
+      !primaryNav.classList.contains("is-open") ||
+      primaryNav.contains(event.target) ||
+      menuToggle.contains(event.target)
+    ) {
+      return;
+    }
+    primaryNav.classList.remove("is-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("is-nav-open");
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !primaryNav.classList.contains("is-open")) {
+      return;
+    }
+    primaryNav.classList.remove("is-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+    document.body.classList.remove("is-nav-open");
+    menuToggle.focus();
+  });
+
+  window.addEventListener("scroll", scheduleActiveNav, { passive: true });
+  window.addEventListener("resize", scheduleActiveNav);
+  updateActiveNav();
 }
 
 function setupPointerEffects() {
