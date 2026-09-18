@@ -12,6 +12,14 @@ const defaultSiteConfig = {
   reading: "一本关于城市与人的书",
   heroPhotoIndex: 0,
   featuredArticleIndex: 0,
+  featured: {
+    date: "",
+    title: "",
+    excerpt: "",
+    photoId: "",
+    image: "",
+    imageAlt: "",
+  },
   backgroundMode: "image",
   assets: {
     background: "./assets/background.jpg",
@@ -195,10 +203,13 @@ function renderArticles() {
     articles.length - 1,
   );
   const featured = articles[featuredIndex];
-  featuredDate.textContent = featured.date || "";
-  featuredTitle.textContent = featured.title || "未命名文章";
-  featuredExcerpt.textContent = featured.excerpt || "";
-  featuredImage.alt = featured.title || "";
+  const featuredConfig = siteConfig.featured || {};
+  featuredDate.textContent = featuredConfig.date || featured.date || "";
+  featuredTitle.textContent =
+    featuredConfig.title || featured.title || "未命名文章";
+  featuredExcerpt.textContent =
+    featuredConfig.excerpt || featured.excerpt || "";
+  featuredImage.alt = featuredConfig.title || featured.title || "";
   featuredCount.textContent = `01 / ${String(articles.length).padStart(2, "0")}`;
   featuredRead.disabled = false;
 }
@@ -263,6 +274,28 @@ function resolveArticleImage(article) {
     : null;
 }
 
+function resolveFeaturedImage(featuredArticle) {
+  const featured = siteConfig.featured || {};
+  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
+
+  if (featured.photoId) {
+    const selectedPhoto = photos.find((photo) => photo.id === featured.photoId);
+    if (selectedPhoto) {
+      return selectedPhoto;
+    }
+  }
+
+  if (featured.image) {
+    return {
+      path: featured.image,
+      alt: featured.imageAlt || featured.title || featuredArticle?.title || "",
+      caption: featured.title || featuredArticle?.title || "",
+    };
+  }
+
+  return resolveArticleImage(featuredArticle);
+}
+
 function renderMedia() {
   const background = absoluteAsset(
     siteConfig.assets?.background,
@@ -283,7 +316,7 @@ function renderMedia() {
     Math.max(articles.length - 1, 0),
   );
   const featuredArticle = articles[featuredArticleIndex];
-  const featuredArticleImage = resolveArticleImage(featuredArticle);
+  const featuredArticleImage = resolveFeaturedImage(featuredArticle);
   const featuredPath = featuredArticleImage?.path || heroPath;
   const featuredFallback = featuredPath.replace("/photos/", "/");
   currentFeaturedPhoto = featuredArticleImage || heroPhoto || null;
