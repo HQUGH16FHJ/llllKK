@@ -88,6 +88,7 @@ const musicProgress = document.querySelector("#music-progress");
 const audio = document.querySelector("#site-audio");
 const musicBars = document.querySelector("#music-bars");
 const articleReader = document.querySelector("#article-reader");
+const articleReaderPanel = document.querySelector(".article-reader__panel");
 const articleReaderDate = document.querySelector("#article-reader-date");
 const articleReaderTitle = document.querySelector("#article-reader-title");
 const articleReaderLead = document.querySelector("#article-reader-lead");
@@ -211,7 +212,9 @@ function renderArticles() {
     title.textContent = article.title || "未命名文章";
     excerpt.textContent = article.excerpt || "";
     tag.className = "article-row__tag";
-    tag.textContent = index === 0 ? "最新" : "记录";
+    tag.textContent = `${String(index + 1).padStart(2, "0")} · ${
+      index === 0 ? "最新" : "记录"
+    }`;
     arrow.className = "article-row__arrow";
     arrow.innerHTML =
       '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>';
@@ -922,7 +925,22 @@ function openArticle(index) {
         .forEach((element) => element.classList.add("is-visible"));
     });
   });
+  window.requestAnimationFrame(updateArticleReaderProgress);
   closeArticleButton.focus();
+}
+
+function updateArticleReaderProgress() {
+  if (!articleReaderPanel) {
+    return;
+  }
+  const maxScroll =
+    articleReaderPanel.scrollHeight - articleReaderPanel.clientHeight;
+  const progress =
+    maxScroll > 0 ? articleReaderPanel.scrollTop / maxScroll : 0;
+  articleReaderPanel.style.setProperty(
+    "--reader-progress",
+    `${Math.min(Math.max(progress, 0), 1) * 100}%`,
+  );
 }
 
 function closeArticle() {
@@ -1420,6 +1438,12 @@ lightbox.addEventListener("pointerup", (event) => {
 });
 
 closeArticleButton.addEventListener("click", closeArticle);
+
+articleReaderPanel?.addEventListener(
+  "scroll",
+  () => window.requestAnimationFrame(updateArticleReaderProgress),
+  { passive: true },
+);
 
 articleReader.addEventListener("click", (event) => {
   if (event.target === articleReader) {
