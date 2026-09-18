@@ -91,6 +91,7 @@ const lightboxNext = document.querySelector("#lightbox-next");
 
 let currentArticleIndex = -1;
 let currentPhotoIndex = -1;
+let currentFeaturedPhoto = null;
 let pointerStartX = null;
 let depthCarouselInstance = null;
 let roleTyper = null;
@@ -285,6 +286,7 @@ function renderMedia() {
   const featuredArticleImage = resolveArticleImage(featuredArticle);
   const featuredPath = featuredArticleImage?.path || heroPath;
   const featuredFallback = featuredPath.replace("/photos/", "/");
+  currentFeaturedPhoto = featuredArticleImage || heroPhoto || null;
 
   document.documentElement.style.setProperty(
     "--ambient-image",
@@ -495,6 +497,16 @@ function openArticle(index) {
     const image = document.createElement("img");
     articleMedia.className = "article-reader__media";
     image.alt = articleImage.alt || articleImage.caption || "";
+    image.tabIndex = 0;
+    image.setAttribute("role", "button");
+    image.setAttribute("aria-label", `放大查看：${image.alt || "文章照片"}`);
+    image.addEventListener("click", () => openLightboxPhoto(articleImage));
+    image.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openLightboxPhoto(articleImage);
+      }
+    });
     image.onerror = () => {
       const fallbackPath = articleImage.path.replace("/photos/", "/");
       if (
@@ -528,14 +540,13 @@ function closeArticle() {
   document.body.classList.remove("is-reader-open");
 }
 
-function openLightbox(index) {
-  const photos = siteConfig.photos || [];
-  const photo = photos[index];
-  if (!photo) {
+function showLightboxPhoto(photo, index = -1) {
+  if (!photo?.path) {
     return;
   }
 
   const fallbackPath = photo.path.replace("/photos/", "/");
+  const total = siteConfig.photos?.length || 0;
 
   currentPhotoIndex = index;
   lightboxImage.onerror = () => {
@@ -549,16 +560,39 @@ function openLightbox(index) {
   };
   lightboxImage.dataset.fallbackUsed = "";
   lightboxImage.src = photo.path;
-  lightboxImage.alt = photo.alt || photo.caption || `照片 ${index + 1}`;
+  lightboxImage.alt = photo.alt || photo.caption || "照片";
   lightboxDate.textContent = photo.date || "";
   lightboxTitle.textContent = photo.caption || "未命名照片";
-  lightboxCount.textContent = `${String(index + 1).padStart(2, "0")} / ${String(
-    photos.length,
-  ).padStart(2, "0")}`;
+  lightboxCount.textContent =
+    index >= 0
+      ? `${String(index + 1).padStart(2, "0")} / ${String(total).padStart(
+          2,
+          "0",
+        )}`
+      : "01 / 01";
+  lightboxPrev.disabled = index < 0 || total <= 1;
+  lightboxNext.disabled = index < 0 || total <= 1;
   lightbox.classList.add("is-open");
   lightbox.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-lightbox-open");
   lightboxClose.focus();
+}
+
+function openLightbox(index) {
+  const photos = siteConfig.photos || [];
+  const photo = photos[index];
+  if (!photo) {
+    return;
+  }
+
+  showLightboxPhoto(photo, index);
+}
+
+function openLightboxPhoto(photo) {
+  const index = (siteConfig.photos || []).findIndex(
+    (item) => item.path === photo?.path,
+  );
+  showLightboxPhoto(photo, index);
 }
 
 function closeLightbox() {
@@ -569,7 +603,7 @@ function closeLightbox() {
 
 function navigateLightbox(direction) {
   const total = siteConfig.photos?.length || 0;
-  if (!total) {
+  if (!total || currentPhotoIndex < 0) {
     return;
   }
   openLightbox((currentPhotoIndex + direction + total) % total);
@@ -760,7 +794,7 @@ featuredRead.addEventListener("click", () =>
   openArticle(Number(siteConfig.featuredArticleIndex) || 0),
 );
 featuredPreview.addEventListener("click", () =>
-  openLightbox(Number(siteConfig.heroPhotoIndex) || 0),
+  openLightboxPhoto(currentFeaturedPhoto),
 );
 
 lightboxClose.addEventListener("click", closeLightbox);
