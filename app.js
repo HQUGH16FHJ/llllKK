@@ -219,6 +219,8 @@ function renderMedia() {
   const avatar = absoluteAsset(siteConfig.assets?.avatar, "./assets/avatar.jpg");
   const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
   const heroPhoto = photos[0];
+  const heroPath = heroPhoto?.path || background;
+  const heroFallback = heroPath.replace("/photos/", "/");
 
   document.documentElement.style.setProperty(
     "--ambient-image",
@@ -227,10 +229,10 @@ function renderMedia() {
   document.querySelector(".ambient__image").style.backgroundImage =
     `url("${background}")`;
 
-  imageFallback(heroImage, heroPhoto?.path || background, background);
+  imageFallback(heroImage, heroPath, heroFallback || background);
   heroPhotoCaption.textContent =
     heroPhoto?.caption || siteConfig.status || "生活切片";
-  imageFallback(featuredImage, heroPhoto?.path || background, background);
+  imageFallback(featuredImage, heroPath, heroFallback || background);
 
   document.querySelectorAll("[data-avatar]").forEach((image) => {
     imageFallback(image, avatar, "./assets/avatar.jpg");
@@ -281,7 +283,15 @@ function renderPhotos() {
     image.alt = photo.alt || photo.caption || `照片 ${index + 1}`;
     image.loading = "lazy";
     image.onload = () => figure.classList.add("has-image");
-    image.onerror = () => figure.classList.remove("has-image");
+    const fallbackPath = photo.path.replace("/photos/", "/");
+    image.onerror = () => {
+      if (fallbackPath !== photo.path && image.dataset.fallbackUsed !== "true") {
+        image.dataset.fallbackUsed = "true";
+        image.src = fallbackPath;
+        return;
+      }
+      figure.classList.remove("has-image");
+    };
     image.src = photo.path;
     empty.className = "photo__empty";
     empty.textContent = `PHOTO / ${String(index + 1).padStart(2, "0")}`;
