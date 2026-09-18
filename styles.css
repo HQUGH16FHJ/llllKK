@@ -4261,6 +4261,28 @@ img {
   }
 }
 
+.music-dock__track-select {
+  display: block;
+  margin-top: 6px;
+}
+
+.music-dock__track-select select {
+  width: 100%;
+  min-width: 0;
+  height: 26px;
+  padding: 0 22px 0 8px;
+  border: 1px solid var(--warm-line);
+  border-radius: 3px;
+  color: var(--warm-muted);
+  background: rgb(255 252 245 / 72%);
+  font-size: 0.64rem;
+  text-overflow: ellipsis;
+}
+
+.music-dock.is-collapsed .music-dock__track-select {
+  display: block;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
