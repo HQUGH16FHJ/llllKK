@@ -110,6 +110,8 @@ let musicTracks = [];
 let currentMusicIndex = -1;
 let musicHistory = [];
 let musicPlaybackFailures = 0;
+let musicTracksSignature = "";
+let musicAutoplayArmed = false;
 
 const currentYear = new Date().getFullYear();
 document.querySelector("#footer-year").textContent = currentYear;
@@ -1147,7 +1149,16 @@ function prepareMusicLibrary() {
       ]
     : [];
 
-  musicTracks = configuredTracks.length ? configuredTracks : fallbackTrack;
+  const nextTracks = configuredTracks.length ? configuredTracks : fallbackTrack;
+  const nextSignature = JSON.stringify(
+    nextTracks.map((track) => [track.path, track.title, track.artist]),
+  );
+  if (musicTracksSignature === nextSignature) {
+    return;
+  }
+
+  musicTracks = nextTracks;
+  musicTracksSignature = nextSignature;
   musicHistory = [];
   musicPlaybackFailures = 0;
 
@@ -1165,7 +1176,35 @@ function prepareMusicLibrary() {
   musicToggle.disabled = false;
   musicPrev.disabled = false;
   musicNext.disabled = false;
-  loadMusicTrack(Math.floor(Math.random() * musicTracks.length), false);
+  loadMusicTrack(Math.floor(Math.random() * musicTracks.length), true);
+  armMusicAutoplayFallback();
+}
+
+function armMusicAutoplayFallback() {
+  if (musicAutoplayArmed) {
+    return;
+  }
+  musicAutoplayArmed = true;
+
+  const attemptPlayback = () => {
+    if (!audio.paused) {
+      removeListeners();
+      return;
+    }
+    audio
+      .play()
+      .then(removeListeners)
+      .catch(() => {});
+  };
+  const removeListeners = () => {
+    document.removeEventListener("pointerdown", attemptPlayback);
+    document.removeEventListener("keydown", attemptPlayback);
+    document.removeEventListener("touchstart", attemptPlayback);
+  };
+
+  document.addEventListener("pointerdown", attemptPlayback, { passive: true });
+  document.addEventListener("keydown", attemptPlayback);
+  document.addEventListener("touchstart", attemptPlayback, { passive: true });
 }
 
 function loadMusicTrack(index, autoplay) {
@@ -1176,6 +1215,7 @@ function loadMusicTrack(index, autoplay) {
   currentMusicIndex = (index + musicTracks.length) % musicTracks.length;
   const track = musicTracks[currentMusicIndex];
   audio.src = absoluteAsset(track.path, "./assets/music.mp3");
+  audio.autoplay = autoplay;
   audio.load();
   setText('[data-music="title"]', track.title || "未命名曲目");
   setText('[data-music="artist"]', track.artist || "");
