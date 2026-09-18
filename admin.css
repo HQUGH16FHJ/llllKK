@@ -823,6 +823,45 @@ img {
   background: #fff;
 }
 
+.storage-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px solid rgb(167 62 45 / 28%);
+  border-radius: var(--radius);
+  background: rgb(167 62 45 / 5%);
+}
+
+.storage-tools > div {
+  display: grid;
+  gap: 5px;
+}
+
+.storage-tools strong {
+  font-size: 0.82rem;
+}
+
+.storage-tools span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.65;
+}
+
+.storage-tools__danger {
+  flex: 0 0 auto;
+  border-color: var(--danger);
+  color: #fff;
+  background: var(--danger);
+}
+
+.storage-tools__danger:hover {
+  border-color: #771c13;
+  background: #771c13;
+}
+
 .music-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -997,6 +1036,11 @@ img {
   }
 
   .music-upload-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .storage-tools {
     align-items: flex-start;
     flex-direction: column;
   }
