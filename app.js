@@ -12,6 +12,7 @@ const defaultSiteConfig = {
   reading: "一本关于城市与人的书",
   heroPhotoIndex: 0,
   featuredArticleIndex: 0,
+  backgroundMode: "image",
   assets: {
     background: "./assets/background.jpg",
     backgroundVideo:
@@ -257,11 +258,18 @@ function renderMedia() {
   document.querySelector(".ambient__image").style.backgroundImage =
     `url("${background}")`;
   ambientVideo.poster = background;
-  ambientVideo.src = siteConfig.assets?.backgroundVideo || "";
+  const backgroundMode = siteConfig.backgroundMode || "video";
 
-  if (siteConfig.assets?.backgroundVideo) {
+  if (
+    backgroundMode === "video" &&
+    siteConfig.assets?.backgroundVideo
+  ) {
+    ambientVideo.src = siteConfig.assets.backgroundVideo;
     ambientVideo.load();
   } else {
+    ambientVideo.pause();
+    ambientVideo.removeAttribute("src");
+    ambientVideo.load();
     ambient.classList.remove("has-video");
   }
 
@@ -298,7 +306,10 @@ function renderMedia() {
 }
 
 ambientVideo.addEventListener("canplay", () => {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (
+    siteConfig.backgroundMode !== "video" ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
     return;
   }
   ambientVideo
