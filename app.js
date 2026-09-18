@@ -55,7 +55,6 @@ const articleIndex = document.querySelector("#article-index");
 const articleHoverPreview = document.querySelector("#article-hover-preview");
 const articleHoverImage = articleHoverPreview?.querySelector("img");
 const articleHoverLabel = articleHoverPreview?.querySelector("span");
-const photoGrid = document.querySelector("#photo-grid");
 const timeline = document.querySelector("#timeline");
 const depthCarouselHost = document.querySelector("#depth-carousel");
 const heroRoleType = document.querySelector("#hero-role-type");
@@ -304,57 +303,10 @@ ambientVideo.addEventListener("error", () => {
   ambient.classList.remove("has-video");
 });
 
-function renderPhotos() {
-  photoGrid.replaceChildren();
-  const photos = Array.isArray(siteConfig.photos) ? siteConfig.photos : [];
-
-  photos.forEach((photo, index) => {
-    const figure = document.createElement("figure");
-    const frame = document.createElement("div");
-    const image = document.createElement("img");
-    const empty = document.createElement("span");
-    const trigger = document.createElement("button");
-    const caption = document.createElement("figcaption");
-    const date = document.createElement("span");
-    const label = document.createElement("p");
-    const layout = ["wide", "standard", "tall"].includes(photo.layout)
-      ? photo.layout
-      : "standard";
-
-    figure.className = `photo photo--${layout}`;
-    frame.className = "photo__frame";
-    image.alt = photo.alt || photo.caption || `照片 ${index + 1}`;
-    image.loading = "lazy";
-    image.onload = () => figure.classList.add("has-image");
-    const fallbackPath = photo.path.replace("/photos/", "/");
-    image.onerror = () => {
-      if (fallbackPath !== photo.path && image.dataset.fallbackUsed !== "true") {
-        image.dataset.fallbackUsed = "true";
-        image.src = fallbackPath;
-        return;
-      }
-      figure.classList.remove("has-image");
-    };
-    image.src = photo.path;
-    empty.className = "photo__empty";
-    empty.textContent = `PHOTO / ${String(index + 1).padStart(2, "0")}`;
-    trigger.type = "button";
-    trigger.dataset.photoIndex = String(index);
-    trigger.setAttribute("aria-label", `查看照片：${photo.caption || index + 1}`);
-    date.textContent = photo.date || "";
-    label.textContent = photo.caption || "";
-    frame.append(image, empty, trigger);
-    caption.append(date, label);
-    figure.append(frame, caption);
-    photoGrid.append(figure);
-  });
-}
-
 function renderAll() {
   fillSiteContent();
   renderMedia();
   renderArticles();
-  renderPhotos();
   renderTimeline();
   renderRoleType();
   renderDepthCarousel();
@@ -408,6 +360,23 @@ function renderDepthCarousel() {
     return;
   }
 
+  const viewportWidth = window.innerWidth;
+  const cardWidth =
+    viewportWidth <= 480
+      ? Math.min(300, viewportWidth - 36)
+      : viewportWidth <= 1024
+        ? 360
+        : viewportWidth <= 1440
+          ? 420
+          : 480;
+  const cardHeight = Math.round(cardWidth * 1.25);
+  const spread = viewportWidth <= 480 ? 54 : viewportWidth <= 1024 ? 74 : 96;
+  const depth = viewportWidth <= 480 ? 145 : viewportWidth <= 1024 ? 190 : 230;
+
+  depthCarouselHost.style.minHeight = `${
+    cardHeight + (viewportWidth <= 480 ? 110 : 180)
+  }px`;
+
   depthCarouselInstance = new window.DepthCarousel(depthCarouselHost, {
     items: photos.map((photo, index) => ({
       image: photo.path,
@@ -415,14 +384,15 @@ function renderDepthCarousel() {
       alt: photo.alt || photo.caption || `照片 ${index + 1}`,
       caption: photo.caption || "",
     })),
-    cardWidth: Math.min(330, Math.max(250, window.innerWidth * 0.32)),
-    cardHeight: Math.min(420, Math.max(310, window.innerWidth * 0.4)),
-    radius: 14,
-    depth: 220,
-    spread: 90,
-    tilt: 22,
+    cardWidth,
+    cardHeight,
+    radius: viewportWidth <= 480 ? 12 : 16,
+    depth,
+    spread,
+    tilt: viewportWidth <= 1024 ? 18 : 22,
     tiltDirection: "right",
-    visibleCards: 4,
+    visibleCards:
+      viewportWidth <= 600 ? 2.5 : viewportWidth <= 1024 ? 3.2 : 4.4,
     falloff: 0.2,
     blur: 6,
     autoplay: true,
@@ -430,6 +400,15 @@ function renderDepthCarousel() {
     onSelect: (index) => openLightbox(index),
   });
 }
+
+let carouselResizeTimer;
+
+window.addEventListener("resize", () => {
+  window.clearTimeout(carouselResizeTimer);
+  carouselResizeTimer = window.setTimeout(() => {
+    renderDepthCarousel();
+  }, 180);
+});
 
 function setupTextReveals() {
   document
@@ -475,10 +454,9 @@ function openLightbox(index) {
     return;
   }
 
-  const cardImage = photoGrid
-    .querySelector(`[data-photo-index="${index}"]`)
-    ?.closest(".photo")
-    ?.querySelector("img");
+  const cardImage = depthCarouselHost?.querySelectorAll(
+    ".depth-carousel__card img",
+  )[index];
   const fallbackPath = photo.path.replace("/photos/", "/");
   const cardLoaded = (cardImage?.naturalWidth || 0) > 0;
   const primarySource = cardLoaded
@@ -707,13 +685,6 @@ featuredRead.addEventListener("click", () =>
 featuredPreview.addEventListener("click", () =>
   openLightbox(Number(siteConfig.heroPhotoIndex) || 0),
 );
-
-photoGrid.addEventListener("click", (event) => {
-  const trigger = event.target.closest("[data-photo-index]");
-  if (trigger) {
-    openLightbox(Number(trigger.dataset.photoIndex));
-  }
-});
 
 lightboxClose.addEventListener("click", closeLightbox);
 lightboxPrev.addEventListener("click", () => navigateLightbox(-1));
