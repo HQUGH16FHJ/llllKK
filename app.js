@@ -354,8 +354,21 @@ function openLightbox(index) {
     return;
   }
 
+  const cardImage = photoGrid
+    .querySelector(`[data-photo-index="${index}"]`)
+    ?.closest(".photo")
+    ?.querySelector("img");
+  const fallbackPath = photo.path.replace("/photos/", "/");
+
   currentPhotoIndex = index;
-  lightboxImage.src = photo.path;
+  lightboxImage.onerror = () => {
+    if (fallbackPath !== photo.path && lightboxImage.dataset.fallbackUsed !== "true") {
+      lightboxImage.dataset.fallbackUsed = "true";
+      lightboxImage.src = fallbackPath;
+    }
+  };
+  lightboxImage.dataset.fallbackUsed = "";
+  lightboxImage.src = cardImage?.currentSrc || cardImage?.src || photo.path;
   lightboxImage.alt = photo.alt || photo.caption || `照片 ${index + 1}`;
   lightboxDate.textContent = photo.date || "";
   lightboxTitle.textContent = photo.caption || "未命名照片";
