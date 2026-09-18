@@ -101,6 +101,9 @@ function ensureContentShape() {
   content.articles = Array.isArray(content.articles) ? content.articles : [];
   content.photos = Array.isArray(content.photos) ? content.photos : [];
   content.timeline = Array.isArray(content.timeline) ? content.timeline : [];
+  content.photos.forEach((photo, index) => {
+    photo.id = photo.id || `photo-${index + 1}`;
+  });
   content.music = content.music || {};
   content.music.tracks = Array.isArray(content.music.tracks)
     ? content.music.tracks
@@ -444,6 +447,7 @@ async function saveContent() {
     return;
   }
 
+  ensureContentShape();
   saveButton.disabled = true;
   setStatus("正在保存");
 
@@ -571,7 +575,20 @@ document.addEventListener("input", (event) => {
     item[timelineField.dataset.timelineProp] = timelineField.value;
     markDirty();
   } else if (photoField && content) {
-    content.photos[Number(photoField.dataset.photoIndex)][photoField.dataset.photoProp] = photoField.value;
+    const photoIndex = Number(photoField.dataset.photoIndex);
+    const photo = content.photos[photoIndex];
+    const property = photoField.dataset.photoProp;
+    photo[property] = photoField.value;
+    const linkedArticle = content.articles.find(
+      (article) => article.linkedPhotoId === photo.id,
+    );
+    if (linkedArticle) {
+      if (property === "caption") {
+        linkedArticle.title = photoField.value || "新的照片记录";
+      } else if (property === "date") {
+        linkedArticle.date = photoField.value || linkedArticle.date;
+      }
+    }
     markDirty();
   } else if (trackField && content) {
     content.music.tracks[Number(trackField.dataset.trackIndex)][trackField.dataset.trackProp] = trackField.value;
@@ -654,7 +671,15 @@ photoList.addEventListener("click", (event) => {
   } else if (button.dataset.photoAction === "down") {
     moveItem(content.photos, index, 1);
   } else if (button.dataset.photoAction === "delete" && window.confirm("确定从网站移除这张照片吗？")) {
+    const removedPhoto = content.photos[index];
     content.photos.splice(index, 1);
+    content.articles = content.articles.filter(
+      (article) => article.linkedPhotoId !== removedPhoto.id,
+    );
+    content.featuredArticleIndex = Math.min(
+      Math.max(content.featuredArticleIndex, 0),
+      Math.max(content.articles.length - 1, 0),
+    );
     content.heroPhotoIndex = Math.min(
       Math.max(content.heroPhotoIndex, 0),
       Math.max(content.photos.length - 1, 0),
@@ -812,14 +837,30 @@ addPhotoButton.addEventListener("click", () => {
   if (!content) {
     return;
   }
-  content.photos.unshift({
+  const timestamp = Date.now();
+  const photoId = `photo-${timestamp}`;
+  const date = new Date();
+  const dateLabel = `${String(date.getMonth() + 1).padStart(2, "0")}.${String(
+    date.getDate(),
+  ).padStart(2, "0")}`;
+  const photo = {
+    id: photoId,
     path: `./assets/photos/photo-${String(content.photos.length + 1).padStart(2, "0")}.jpg`,
     caption: "新的照片",
-    date: new Date().getFullYear().toString(),
+    date: dateLabel,
     layout: "standard",
     alt: "新的照片",
+  };
+  content.photos.unshift(photo);
+  content.heroPhotoIndex = 0;
+  content.articles.unshift({
+    date: dateLabel,
+    title: photo.caption,
+    excerpt: "一张新的照片已经加入档案。",
+    body: ["这张照片记录下了最近的一个片段。"],
+    linkedPhotoId: photoId,
   });
-  content.heroPhotoIndex += 1;
+  content.featuredArticleIndex = 0;
   markDirty();
   renderAll();
 });
