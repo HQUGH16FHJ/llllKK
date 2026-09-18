@@ -405,6 +405,7 @@ function renderMedia() {
   video.addEventListener("error", () => {
     video.classList.remove("has-video");
     videoShell.classList.remove("has-video");
+    window.requestAnimationFrame(revealVisibleText);
   });
 
   prepareMusicLibrary();
