@@ -494,8 +494,18 @@ function openArticle(index) {
   if (articleMedia) {
     const image = document.createElement("img");
     articleMedia.className = "article-reader__media";
-    image.src = articleImage.path;
     image.alt = articleImage.alt || articleImage.caption || "";
+    image.onerror = () => {
+      const fallbackPath = articleImage.path.replace("/photos/", "/");
+      if (
+        fallbackPath !== articleImage.path &&
+        image.dataset.fallbackUsed !== "true"
+      ) {
+        image.dataset.fallbackUsed = "true";
+        image.src = fallbackPath;
+      }
+    };
+    image.src = articleImage.path;
     articleMedia.append(image);
   }
   articleReaderBody.replaceChildren(
@@ -525,25 +535,20 @@ function openLightbox(index) {
     return;
   }
 
-  const cardImage = depthCarouselHost?.querySelectorAll(
-    ".depth-carousel__card img",
-  )[index];
   const fallbackPath = photo.path.replace("/photos/", "/");
-  const cardLoaded = (cardImage?.naturalWidth || 0) > 0;
-  const primarySource = cardLoaded
-    ? cardImage.currentSrc || cardImage.src
-    : fallbackPath;
-  const secondarySource = cardLoaded ? fallbackPath : photo.path;
 
   currentPhotoIndex = index;
   lightboxImage.onerror = () => {
-    if (secondarySource !== primarySource && lightboxImage.dataset.fallbackUsed !== "true") {
+    if (
+      fallbackPath !== photo.path &&
+      lightboxImage.dataset.fallbackUsed !== "true"
+    ) {
       lightboxImage.dataset.fallbackUsed = "true";
-      lightboxImage.src = secondarySource;
+      lightboxImage.src = fallbackPath;
     }
   };
   lightboxImage.dataset.fallbackUsed = "";
-  lightboxImage.src = primarySource;
+  lightboxImage.src = photo.path;
   lightboxImage.alt = photo.alt || photo.caption || `照片 ${index + 1}`;
   lightboxDate.textContent = photo.date || "";
   lightboxTitle.textContent = photo.caption || "未命名照片";
