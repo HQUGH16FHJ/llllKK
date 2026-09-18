@@ -121,6 +121,7 @@ let analyser = null;
 let analyserData = null;
 let visualizerFrame = null;
 let visualizerSource = null;
+let videoLoadObserver = null;
 
 const currentYear = new Date().getFullYear();
 document.querySelector("#footer-year").textContent = currentYear;
@@ -413,7 +414,21 @@ function renderMedia() {
     siteConfig.assets?.video,
     "./assets/intro.mp4",
   );
-  video.load();
+  video.preload = "none";
+  if (!videoLoadObserver) {
+    videoLoadObserver = new IntersectionObserver(
+      (entries, observer) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+        video.preload = "metadata";
+        video.load();
+        observer.disconnect();
+      },
+      { rootMargin: "360px 0px" },
+    );
+    videoLoadObserver.observe(videoShell);
+  }
 
   video.addEventListener("loadedmetadata", () => {
     video.classList.add("has-video");
@@ -732,6 +747,13 @@ function setupMediaDevelopment() {
       media.addEventListener("error", revealMedia, { once: true });
     } else {
       revealMedia();
+    }
+  });
+
+  document.querySelectorAll("img").forEach((image) => {
+    image.decoding = "async";
+    if (!image.closest(".hero__visual")) {
+      image.loading = "lazy";
     }
   });
 }
