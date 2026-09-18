@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>内容管理后台</title>
-    <link rel="stylesheet" href="./admin.css?v=20260918-3" />
+    <link rel="stylesheet" href="./admin.css?v=20260918-5" />
   </head>
   <body>
     <header class="admin-header">
@@ -68,6 +68,13 @@
               <path d="M8 17h6" />
             </svg>
             文章管理
+          </button>
+          <button type="button" data-tab="timeline">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
+            </svg>
+            时间线
           </button>
           <button type="button" data-tab="photos">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -140,6 +147,14 @@
               <span>最近阅读</span>
               <input type="text" data-field="reading" />
             </label>
+            <label>
+              <span>首页主视觉</span>
+              <select data-index-field="heroPhotoIndex" id="hero-photo-select"></select>
+            </label>
+            <label>
+              <span>首页精选文章</span>
+              <select data-index-field="featuredArticleIndex" id="featured-article-select"></select>
+            </label>
             <label class="form-grid__wide">
               <span>个人短句</span>
               <input type="text" data-field="statement" />
@@ -167,6 +182,23 @@
           </div>
 
           <div class="editor-list" id="article-list"></div>
+        </section>
+
+        <section class="admin-section" data-panel="timeline">
+          <div class="section-title">
+            <div>
+              <p>TIMELINE</p>
+              <h1>时间线管理</h1>
+            </div>
+            <button class="button button--primary" id="add-timeline" type="button">
+              新增节点
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M5 12h14" />
+                <path d="M12 5v14" />
+              </svg>
+            </button>
+          </div>
+          <div class="editor-list" id="timeline-list"></div>
         </section>
 
         <section class="admin-section" data-panel="photos">
@@ -204,6 +236,18 @@
               </div>
               <div class="asset-row__preview" data-preview="background"></div>
               <input type="file" accept="image/*" data-asset-upload="background" />
+            </article>
+            <article class="asset-row">
+              <div class="asset-row__copy">
+                <strong>背景视频</strong>
+                <span>MP4 或 WebM，也可以填写外部视频地址</span>
+              </div>
+              <div class="asset-row__preview asset-row__preview--file" data-preview="backgroundVideo">VIDEO</div>
+              <input type="file" accept="video/mp4,video/webm" data-asset-upload="backgroundVideo" />
+              <label class="asset-row__url">
+                <span>视频地址</span>
+                <input type="url" data-asset-url="backgroundVideo" placeholder="https://..." />
+              </label>
             </article>
             <article class="asset-row">
               <div class="asset-row__copy">
@@ -255,6 +299,6 @@
 
     <div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
 
-    <script src="./admin.js?v=20260918-3"></script>
+    <script src="./admin.js?v=20260918-5"></script>
   </body>
 </html>
