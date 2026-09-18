@@ -82,7 +82,7 @@ const musicNext = document.querySelector("#music-next");
 const musicVolume = document.querySelector("#music-volume");
 const musicCollapse = document.querySelector("#music-collapse");
 const musicState = document.querySelector("#music-state");
-const musicTrackSelect = document.querySelector("#music-track-select");
+let musicTrackSelect = document.querySelector("#music-track-select");
 const musicCurrent = document.querySelector("#music-current");
 const musicDuration = document.querySelector("#music-duration");
 const musicProgress = document.querySelector("#music-progress");
@@ -103,6 +103,19 @@ const lightboxCount = document.querySelector("#lightbox-count");
 const lightboxClose = document.querySelector("#lightbox-close");
 const lightboxPrev = document.querySelector("#lightbox-prev");
 const lightboxNext = document.querySelector("#lightbox-next");
+
+if (!musicTrackSelect && musicBars) {
+  const trackSelectWrap = document.createElement("label");
+  const trackSelectLabel = document.createElement("span");
+  trackSelectWrap.className = "music-dock__track-select";
+  trackSelectLabel.className = "sr-only";
+  trackSelectLabel.textContent = "选择音乐";
+  musicTrackSelect = document.createElement("select");
+  musicTrackSelect.id = "music-track-select";
+  musicTrackSelect.setAttribute("aria-label", "选择音乐");
+  trackSelectWrap.append(trackSelectLabel, musicTrackSelect);
+  musicBars.before(trackSelectWrap);
+}
 
 let currentArticleIndex = -1;
 let currentPhotoIndex = -1;
@@ -1735,12 +1748,9 @@ audio.addEventListener("ended", () => {
 
 audio.addEventListener("error", () => {
   musicPlaybackFailures += 1;
-  musicState.textContent = "曲目加载失败";
-  if (musicPlaybackFailures < musicTracks.length) {
-    window.setTimeout(playNextRandomTrack, 800);
-  } else {
-    musicToggle.disabled = true;
-  }
+  musicState.textContent = "曲目文件不可用，请重新上传";
+  musicToggle.disabled = false;
+  stopMusicVisualizer();
 });
 
 musicProgress.addEventListener("input", () => {
