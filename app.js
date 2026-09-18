@@ -897,6 +897,52 @@ function observeReveals() {
 function setupNavigation() {
   const sections = [...document.querySelectorAll("main section[id]")];
   const navLinks = [...document.querySelectorAll(".primary-nav a")];
+  let scrollAnimationFrame = null;
+
+  const scrollToSection = (target) => {
+    if (!target) {
+      return;
+    }
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const offset = siteHeader.getBoundingClientRect().height + 14;
+    const targetY = Math.max(
+      0,
+      target.getBoundingClientRect().top + window.scrollY - offset,
+    );
+
+    if (scrollAnimationFrame) {
+      window.cancelAnimationFrame(scrollAnimationFrame);
+    }
+
+    if (reducedMotion || Math.abs(targetY - window.scrollY) < 4) {
+      window.scrollTo(0, targetY);
+      return;
+    }
+
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    const duration = Math.min(
+      900,
+      Math.max(480, Math.abs(distance) * 0.32),
+    );
+    const startTime = performance.now();
+
+    const step = (time) => {
+      const progress = Math.min((time - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      window.scrollTo(0, startY + distance * eased);
+      if (progress < 1) {
+        scrollAnimationFrame = window.requestAnimationFrame(step);
+      } else {
+        scrollAnimationFrame = null;
+      }
+    };
+
+    scrollAnimationFrame = window.requestAnimationFrame(step);
+  };
 
   let navTicking = false;
   const updateActiveNav = () => {
@@ -947,6 +993,21 @@ function setupNavigation() {
       menuToggle.setAttribute("aria-expanded", "false");
       document.body.classList.remove("is-nav-open");
     }
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const hash = link.getAttribute("href");
+      const target = hash && hash !== "#" ? document.querySelector(hash) : null;
+      if (!target) {
+        return;
+      }
+      event.preventDefault();
+      scrollToSection(target);
+      if (window.location.hash !== hash) {
+        window.history.pushState(null, "", hash);
+      }
+    });
   });
 
   document.addEventListener("pointerdown", (event) => {
