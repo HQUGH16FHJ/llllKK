@@ -82,6 +82,7 @@ const musicNext = document.querySelector("#music-next");
 const musicVolume = document.querySelector("#music-volume");
 const musicCollapse = document.querySelector("#music-collapse");
 const musicState = document.querySelector("#music-state");
+const musicTrackSelect = document.querySelector("#music-track-select");
 const musicCurrent = document.querySelector("#music-current");
 const musicDuration = document.querySelector("#music-duration");
 const musicProgress = document.querySelector("#music-progress");
@@ -1519,8 +1520,21 @@ function prepareMusicLibrary() {
   musicToggle.disabled = false;
   musicPrev.disabled = false;
   musicNext.disabled = false;
+  renderMusicTrackSelect();
   loadMusicTrack(Math.floor(Math.random() * musicTracks.length), true);
   armMusicAutoplayFallback();
+}
+
+function renderMusicTrackSelect() {
+  if (!musicTrackSelect) {
+    return;
+  }
+  musicTrackSelect.innerHTML = musicTracks
+    .map(
+      (track, index) =>
+        `<option value="${index}">${escapeHtml(track.title || `曲目 ${index + 1}`)}</option>`,
+    )
+    .join("");
 }
 
 function armMusicAutoplayFallback() {
@@ -1562,6 +1576,9 @@ function loadMusicTrack(index, autoplay) {
   audio.load();
   setText('[data-music="title"]', track.title || "未命名曲目");
   setText('[data-music="artist"]', track.artist || "");
+  if (musicTrackSelect) {
+    musicTrackSelect.value = String(currentMusicIndex);
+  }
   musicState.textContent = autoplay ? "随机播放" : "准备播放";
   musicProgress.value = "0";
   musicCurrent.textContent = "00:00";
@@ -1620,6 +1637,10 @@ musicToggle.addEventListener("click", () => {
 
 musicNext.addEventListener("click", playNextRandomTrack);
 musicPrev.addEventListener("click", playPreviousTrack);
+
+musicTrackSelect?.addEventListener("change", () => {
+  loadMusicTrack(Number(musicTrackSelect.value), true);
+});
 
 const savedVolume = Number(localStorage.getItem("siteMusicVolume"));
 audio.volume = Number.isFinite(savedVolume)
