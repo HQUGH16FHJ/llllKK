@@ -24,6 +24,7 @@ const defaultSiteConfig = {
   music: {
     title: "待添加曲目",
     artist: "刘骐硕",
+    tracks: [],
   },
   photos: [],
   works: [],
@@ -63,6 +64,9 @@ const videoShell = document.querySelector("[data-video-shell]");
 const videoPlaceholder = document.querySelector("#video-placeholder");
 const musicDock = document.querySelector("#music-dock");
 const musicToggle = document.querySelector("#music-toggle");
+const musicPrev = document.querySelector("#music-prev");
+const musicNext = document.querySelector("#music-next");
+const musicVolume = document.querySelector("#music-volume");
 const musicCollapse = document.querySelector("#music-collapse");
 const musicState = document.querySelector("#music-state");
 const musicCurrent = document.querySelector("#music-current");
@@ -89,6 +93,10 @@ let currentPhotoIndex = -1;
 let pointerStartX = null;
 let depthCarouselInstance = null;
 let roleTyper = null;
+let musicTracks = [];
+let currentMusicIndex = -1;
+let musicHistory = [];
+let musicPlaybackFailures = 0;
 
 const currentYear = new Date().getFullYear();
 document.querySelector("#footer-year").textContent = currentYear;
@@ -286,7 +294,7 @@ function renderMedia() {
     videoShell.classList.remove("has-video");
   });
 
-  audio.src = absoluteAsset(siteConfig.assets?.music, "./assets/music.mp3");
+  prepareMusicLibrary();
 }
 
 ambientVideo.addEventListener("canplay", () => {
@@ -383,6 +391,7 @@ function renderDepthCarousel() {
       fallback: photo.path.replace("/photos/", "/"),
       alt: photo.alt || photo.caption || `照片 ${index + 1}`,
       caption: photo.caption || "",
+      date: photo.date || "",
     })),
     cardWidth,
     cardHeight,
@@ -746,20 +755,126 @@ videoPlaceholder.addEventListener("click", () => {
   });
 });
 
+function prepareMusicLibrary() {
+  const configuredTracks = Array.isArray(siteConfig.music?.tracks)
+    ? siteConfig.music.tracks.filter((track) => track?.path)
+    : [];
+  const fallbackTrack = siteConfig.assets?.music
+    ? [
+        {
+          title: siteConfig.music?.title || "未命名曲目",
+          artist: siteConfig.music?.artist || "",
+          path: siteConfig.assets.music,
+        },
+      ]
+    : [];
+
+  musicTracks = configuredTracks.length ? configuredTracks : fallbackTrack;
+  musicHistory = [];
+  musicPlaybackFailures = 0;
+
+  if (!musicTracks.length) {
+    currentMusicIndex = -1;
+    musicState.textContent = "音乐位待添加";
+    musicToggle.disabled = true;
+    musicPrev.disabled = true;
+    musicNext.disabled = true;
+    setText('[data-music="title"]', "待添加曲目");
+    setText('[data-music="artist"]', "");
+    return;
+  }
+
+  musicToggle.disabled = false;
+  musicPrev.disabled = false;
+  musicNext.disabled = false;
+  loadMusicTrack(Math.floor(Math.random() * musicTracks.length), false);
+}
+
+function loadMusicTrack(index, autoplay) {
+  if (!musicTracks.length) {
+    return;
+  }
+
+  currentMusicIndex = (index + musicTracks.length) % musicTracks.length;
+  const track = musicTracks[currentMusicIndex];
+  audio.src = absoluteAsset(track.path, "./assets/music.mp3");
+  audio.load();
+  setText('[data-music="title"]', track.title || "未命名曲目");
+  setText('[data-music="artist"]', track.artist || "");
+  musicState.textContent = autoplay ? "随机播放" : "准备播放";
+  musicProgress.value = "0";
+  musicCurrent.textContent = "00:00";
+
+  if (autoplay) {
+    audio.play().catch(() => {
+      musicState.textContent = "点击播放";
+    });
+  }
+}
+
+function randomMusicIndex() {
+  if (musicTracks.length <= 1) {
+    return 0;
+  }
+  let next = currentMusicIndex;
+  while (next === currentMusicIndex) {
+    next = Math.floor(Math.random() * musicTracks.length);
+  }
+  return next;
+}
+
+function playNextRandomTrack() {
+  if (!musicTracks.length) {
+    return;
+  }
+  if (currentMusicIndex >= 0) {
+    musicHistory.push(currentMusicIndex);
+  }
+  loadMusicTrack(randomMusicIndex(), true);
+}
+
+function playPreviousTrack() {
+  if (!musicTracks.length) {
+    return;
+  }
+  const previous = musicHistory.pop();
+  loadMusicTrack(
+    previous ?? (currentMusicIndex - 1 + musicTracks.length) % musicTracks.length,
+    true,
+  );
+}
+
 musicToggle.addEventListener("click", () => {
   if (audio.paused) {
+    if (currentMusicIndex < 0) {
+      loadMusicTrack(randomMusicIndex(), false);
+    }
     audio.play().catch(() => {
-      musicState.textContent = "音乐位待添加";
-      musicToggle.disabled = true;
+      musicState.textContent = "点击播放";
     });
   } else {
     audio.pause();
   }
 });
 
+musicNext.addEventListener("click", playNextRandomTrack);
+musicPrev.addEventListener("click", playPreviousTrack);
+
+const savedVolume = Number(localStorage.getItem("siteMusicVolume"));
+audio.volume = Number.isFinite(savedVolume)
+  ? Math.min(Math.max(savedVolume, 0), 1)
+  : 0.82;
+musicVolume.value = String(audio.volume);
+
+musicVolume.addEventListener("input", () => {
+  audio.volume = Number(musicVolume.value);
+  localStorage.setItem("siteMusicVolume", String(audio.volume));
+});
+
 audio.addEventListener("play", () => {
+  musicPlaybackFailures = 0;
   musicDock.classList.add("is-playing");
-  musicState.textContent = "正在播放";
+  musicState.textContent = "随机播放";
 });
 
 audio.addEventListener("pause", () => {
@@ -778,14 +893,17 @@ audio.addEventListener("timeupdate", () => {
 });
 
 audio.addEventListener("ended", () => {
-  musicProgress.value = "0";
-  musicCurrent.textContent = "00:00";
+  playNextRandomTrack();
 });
 
 audio.addEventListener("error", () => {
-  musicState.textContent = "音乐位待添加";
-  musicToggle.disabled = true;
-  musicProgress.disabled = true;
+  musicPlaybackFailures += 1;
+  musicState.textContent = "曲目加载失败";
+  if (musicPlaybackFailures < musicTracks.length) {
+    window.setTimeout(playNextRandomTrack, 800);
+  } else {
+    musicToggle.disabled = true;
+  }
 });
 
 musicProgress.addEventListener("input", () => {
