@@ -714,6 +714,11 @@ function openArticle(index) {
   articleReader.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-reader-open");
   observeTextMotion(articleReaderBody);
+  window.requestAnimationFrame(() => {
+    articleReaderBody
+      .querySelectorAll(".text-motion")
+      .forEach((element) => element.classList.add("is-visible"));
+  });
   closeArticleButton.focus();
 }
 
@@ -759,6 +764,11 @@ function showLightboxPhoto(photo, index = -1) {
   lightbox.setAttribute("aria-hidden", "false");
   document.body.classList.add("is-lightbox-open");
   observeTextMotion(lightbox);
+  window.requestAnimationFrame(() => {
+    lightbox
+      .querySelectorAll(".text-motion")
+      .forEach((element) => element.classList.add("is-visible"));
+  });
   lightboxClose.focus();
 }
 
