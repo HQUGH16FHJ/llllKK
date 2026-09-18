@@ -11,6 +11,7 @@ const addTrackButton = document.querySelector("#add-track");
 const musicUploadInput = document.querySelector("#music-upload-input");
 const heroPhotoSelect = document.querySelector("#hero-photo-select");
 const featuredArticleSelect = document.querySelector("#featured-article-select");
+const backgroundModeSelect = document.querySelector("#background-mode-select");
 const statusDot = document.querySelector("#status-dot");
 const statusText = document.querySelector("#status-text");
 const toast = document.querySelector("#admin-toast");
@@ -120,6 +121,8 @@ function ensureContentShape() {
     Math.max(Number(content.featuredArticleIndex) || 0, 0),
     Math.max(content.articles.length - 1, 0),
   );
+  content.backgroundMode =
+    content.backgroundMode === "image" ? "image" : "video";
 }
 
 function renderIndexSelects() {
@@ -160,6 +163,8 @@ function fillProfileFields() {
   document.querySelectorAll("[data-asset-url]").forEach((field) => {
     field.value = content.assets?.[field.dataset.assetUrl] || "";
   });
+
+  backgroundModeSelect.value = content.backgroundMode || "video";
 }
 
 function renderArticles() {
@@ -542,6 +547,7 @@ document.addEventListener("input", (event) => {
   const photoField = event.target.closest("[data-photo-prop]");
   const trackField = event.target.closest("[data-track-prop]");
   const assetUrlField = event.target.closest("[data-asset-url]");
+  const backgroundModeField = event.target.closest("#background-mode-select");
 
   if (field && content) {
     content[field.dataset.field] = field.value;
@@ -572,6 +578,9 @@ document.addEventListener("input", (event) => {
     markDirty();
   } else if (assetUrlField && content) {
     content.assets[assetUrlField.dataset.assetUrl] = assetUrlField.value.trim();
+    markDirty();
+  } else if (backgroundModeField && content) {
+    content.backgroundMode = backgroundModeField.value;
     markDirty();
   }
 });
@@ -703,6 +712,11 @@ document.querySelectorAll("[data-asset-upload]").forEach((input) => {
         kind: assetName === "video" || assetName === "music" ? "media" : "image",
       });
       content.assets[assetName] = result.path;
+      if (assetName === "background") {
+        content.backgroundMode = "image";
+      } else if (assetName === "backgroundVideo") {
+        content.backgroundMode = "video";
+      }
       dirty = true;
       renderAssetPreviews();
       await saveContent();
