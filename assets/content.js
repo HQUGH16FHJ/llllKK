@@ -11,6 +11,14 @@ window.SITE_CONTENT = {
   "reading": "一本关于城市与人的书",
   "heroPhotoIndex": 0,
   "featuredArticleIndex": 0,
+  "featured": {
+    "date": "",
+    "title": "",
+    "excerpt": "",
+    "photoId": "",
+    "image": "",
+    "imageAlt": ""
+  },
   "backgroundMode": "image",
   "assets": {
     "background": "https://llllkk.online/media/media/1789685571996-danking.jpg",
