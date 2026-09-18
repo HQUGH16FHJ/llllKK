@@ -1,3 +1,4 @@
+(() => {
 class DepthCarousel {
   constructor(element, options = {}) {
     this.element = element;
@@ -330,3 +331,4 @@ class DepthCarousel {
 }
 
 window.DepthCarousel = DepthCarousel;
+})();
