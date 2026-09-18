@@ -7,6 +7,7 @@ const downloadButton = document.querySelector("#download-content");
 const addArticleButton = document.querySelector("#add-article");
 const addTimelineButton = document.querySelector("#add-timeline");
 const addPhotoButton = document.querySelector("#add-photo");
+const newPhotoUploadInput = document.querySelector("#new-photo-upload");
 const addTrackButton = document.querySelector("#add-track");
 const musicUploadInput = document.querySelector("#music-upload-input");
 const heroPhotoSelect = document.querySelector("#hero-photo-select");
@@ -981,36 +982,64 @@ addTimelineButton.addEventListener("click", () => {
 });
 
 addPhotoButton.addEventListener("click", () => {
-  if (!content) {
+  if (content) {
+    newPhotoUploadInput.click();
+  }
+});
+
+newPhotoUploadInput.addEventListener("change", async () => {
+  const file = newPhotoUploadInput.files?.[0];
+  if (!file || !content) {
     return;
   }
+
   const timestamp = Date.now();
   const photoId = `photo-${timestamp}`;
   const date = new Date();
   const dateLabel = `${String(date.getMonth() + 1).padStart(2, "0")}.${String(
     date.getDate(),
   ).padStart(2, "0")}`;
-  const photo = {
-    id: photoId,
-    path: `./assets/photos/photo-${String(content.photos.length + 1).padStart(2, "0")}.jpg`,
-    caption: "新的照片",
-    date: dateLabel,
-    layout: "standard",
-    alt: "新的照片",
-  };
-  content.photos.unshift(photo);
-  content.heroPhotoIndex = 0;
-  content.articles.unshift({
-    date: dateLabel,
-    title: photo.caption,
-    excerpt: "一张新的照片已经加入档案。",
-    body: ["这张照片记录下了最近的一个片段。"],
-    linkedPhotoId: photoId,
-    linkedByPhoto: true,
-  });
-  content.featuredArticleIndex = 0;
-  markDirty();
-  renderAll();
+
+  newPhotoUploadInput.disabled = true;
+  addPhotoButton.disabled = true;
+  setStatus("正在上传新照片");
+
+  try {
+    const result = await uploadFile(file, {
+      kind: "photo",
+      target: `./assets/photos/photo-${String(content.photos.length + 1).padStart(2, "0")}.jpg`,
+    });
+    const photo = {
+      id: photoId,
+      path: result.path,
+      caption: "新的照片",
+      date: dateLabel,
+      layout: "standard",
+      alt: "新的照片",
+    };
+    content.photos.unshift(photo);
+    content.heroPhotoIndex = 0;
+    content.articles.unshift({
+      date: dateLabel,
+      title: photo.caption,
+      excerpt: "一张新的照片已经加入档案。",
+      body: ["这张照片记录下了最近的一个片段。"],
+      linkedPhotoId: photoId,
+      linkedByPhoto: true,
+    });
+    content.featuredArticleIndex = 0;
+    dirty = true;
+    renderAll();
+    await saveContent();
+    showToast("新照片和记录已同步", "success");
+  } catch (error) {
+    setStatus("新照片上传失败", "error");
+    showToast(error.message, "error");
+  } finally {
+    newPhotoUploadInput.value = "";
+    newPhotoUploadInput.disabled = false;
+    addPhotoButton.disabled = false;
+  }
 });
 
 saveButton.addEventListener("click", saveContent);
