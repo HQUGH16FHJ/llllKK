@@ -1769,6 +1769,18 @@ main,
   margin: 0 0 1.6em;
 }
 
+.article-reader__media {
+  margin: 0 0 36px;
+}
+
+.article-reader__media img {
+  width: 100%;
+  max-height: 68vh;
+  border: 1px solid var(--line);
+  object-fit: contain;
+  background: #0b110f;
+}
+
 .lightbox {
   position: fixed;
   inset: 0;
