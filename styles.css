@@ -2374,10 +2374,10 @@ body.is-loaded .ambient__image {
 }
 
 .site-header.is-scrolled {
-  border-color: var(--warm-line);
-  background: rgb(255 247 222 / 54%);
-  box-shadow: 0 16px 42px rgb(98 62 30 / 8%);
-  backdrop-filter: blur(20px);
+  border-color: transparent;
+  background: rgb(255 247 222 / 16%);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
 }
 
 .site-brand > span,
@@ -2455,6 +2455,10 @@ body.is-loaded .ambient__image {
   color: var(--warm-faint);
 }
 
+.primary-nav a {
+  text-shadow: 0 1px 10px rgb(255 250 240 / 72%);
+}
+
 .primary-nav a:hover,
 .primary-nav a.is-active {
   color: var(--warm-text);
@@ -2482,10 +2486,10 @@ body.is-loaded .ambient__image {
 
 @media (max-width: 1100px) {
   .primary-nav {
-    border-color: var(--warm-line);
-    background: rgb(255 247 222 / 52%);
-    box-shadow: 0 20px 50px rgb(95 58 28 / 10%);
-    backdrop-filter: blur(22px);
+    border-color: rgb(76 58 40 / 12%);
+    background: rgb(255 247 222 / 22%);
+    box-shadow: 0 18px 46px rgb(95 58 28 / 7%);
+    backdrop-filter: blur(24px);
   }
 }
 
