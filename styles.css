@@ -1779,6 +1779,12 @@ main,
   border: 1px solid var(--line);
   object-fit: contain;
   background: #0b110f;
+  cursor: zoom-in;
+}
+
+.article-reader__media img:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .lightbox {
@@ -1872,6 +1878,16 @@ main,
 .lightbox__close:hover {
   color: var(--ink);
   background: var(--accent);
+}
+
+.lightbox__nav:disabled {
+  cursor: default;
+  opacity: 0.28;
+}
+
+.lightbox__nav:disabled:hover {
+  color: var(--paper);
+  background: transparent;
 }
 
 .reveal-up {
