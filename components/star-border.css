@@ -1,0 +1,110 @@
+.star-border-container {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.border-gradient-bottom,
+.border-gradient-top {
+  position: absolute;
+  z-index: 0;
+  width: 300%;
+  height: 50%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.border-gradient-bottom {
+  right: -250%;
+  bottom: -12px;
+  animation: star-movement-bottom linear infinite alternate;
+}
+
+.border-gradient-top {
+  top: -12px;
+  left: -250%;
+  animation: star-movement-top linear infinite alternate;
+}
+
+.star-border-container > .inner-content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes star-movement-bottom {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-100%, 0);
+  }
+}
+
+@keyframes star-movement-top {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(100%, 0);
+  }
+}
+.star-border-container {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.border-gradient-bottom,
+.border-gradient-top {
+  position: absolute;
+  z-index: 0;
+  width: 300%;
+  height: 50%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.border-gradient-bottom {
+  right: -250%;
+  bottom: -12px;
+  animation: star-movement-bottom linear infinite alternate;
+}
+
+.border-gradient-top {
+  top: -12px;
+  left: -250%;
+  animation: star-movement-top linear infinite alternate;
+}
+
+.star-border-container > .inner-content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes star-movement-bottom {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-100%, 0);
+  }
+}
+
+@keyframes star-movement-top {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(100%, 0);
+  }
+}
