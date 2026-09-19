@@ -422,6 +422,23 @@ main {
 
 .license-contact a { color: var(--accent-soft); }
 
+.license-production-link {
+  margin-top: 18px;
+}
+
+.license-production-link a {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding: 0 15px;
+  border: 1px solid rgb(255 107 61 / 28%);
+  border-radius: 12px;
+  color: var(--paper);
+  background: rgb(255 107 61 / 7%);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .license-final {
   padding: 24px;
   border: 1px solid rgb(255 107 61 / 22%);

@@ -2214,6 +2214,10 @@ main > section[id] {
     grid-template-columns: 44px minmax(0, 1fr) 32px;
   }
 
+  .footer {
+    padding-bottom: calc(196px + env(safe-area-inset-bottom));
+  }
+
   .music-dock__toggle {
     width: 44px;
     height: 44px;
@@ -4352,5 +4356,11 @@ img {
 
   .interaction-ripple {
     display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .footer {
+    padding-bottom: calc(196px + env(safe-area-inset-bottom));
   }
 }

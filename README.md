@@ -137,4 +137,4 @@ node server.cjs
 - 网站许可证页面：[license.html](./license.html)
 - 具体权利义务以仓库根目录的 [LICENSE](./LICENSE) 为准
 
-Copyright (c) 2026 Liu Qishuo · Bantan. All Rights Reserved.
+Copyright (c) 2026 Liu Qishuo. All Rights Reserved.
