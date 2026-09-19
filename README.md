@@ -1,6 +1,23 @@
 # 刘骐硕的个人博客
 
+![Status](https://img.shields.io/badge/status-active-34d399?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Mobile-38bdf8?style=flat-square)
+![Node](https://img.shields.io/badge/Node.js-local%20server-339933?style=flat-square)
+![License](https://img.shields.io/badge/license-Bantan%20Proprietary-fb7185?style=flat-square)
+
 一个记录文章、照片、影像与日常生活的个人内容网站。项目采用原生 HTML、CSS 和 JavaScript 构建，并提供 Node.js 本地管理后台，用于维护网站内容、照片分组、文章和媒体资源。
+
+[项目预览](#项目预览) · [架构文档](./ARCHITECTURE.md) · [部署文档](./DEPLOYMENT.md) · [设计规范](./docs/DESIGN-SYSTEM.md) · [常见问题](./docs/FAQ.md) · [贡献规范](./CONTRIBUTING.md) · [安全政策](./SECURITY.md) · [使用许可](./LICENSE)
+
+## 项目预览
+
+| 首页 | 文章与记录 |
+|---|---|
+| <img src="./docs/screenshots/index-desktop.jpg" alt="刘骐硕个人博客首页" width="100%"> | <img src="./docs/screenshots/journal-desktop.jpg" alt="文章与记录" width="100%"> |
+
+| 照片档案 | 内容管理 |
+|---|---|
+| <img src="./docs/screenshots/photos-desktop.jpg" alt="照片档案" width="100%"> | 使用 `node server.cjs` 启动本地内容管理后台 |
 
 ## 主要功能
 

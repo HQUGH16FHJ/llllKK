@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you reference this personal website or its writing, cite the project as follows."
+title: "刘骐硕的个人博客"
+type: software
+authors:
+  - family-names: Liu
+    given-names: Qishuo
+    alias: HQUGH16FHJ
+repository-code: "https://github.com/HQUGH16FHJ/llllKK"
+license: "LicenseRef-Bantan-Proprietary"
+license-url: "https://github.com/HQUGH16FHJ/llllKK/blob/main/LICENSE"
+date-released: "2026-09-19"
+keywords:
+  - personal-blog
+  - photography
+  - writing
+  - portfolio
+  - javascript
