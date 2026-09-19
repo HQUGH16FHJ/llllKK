@@ -1628,24 +1628,24 @@ main > section[id] {
 }
 
 .footer__bottom {
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-between;
   padding-top: 26px;
   border-top: 1px solid var(--line);
   color: rgb(240 238 231 / 34%);
   font-family: var(--font-display);
   font-size: 0.62rem;
   letter-spacing: 0.08em;
-  text-align: center;
+  text-align: left;
 }
 
 .footer__bottom > p {
-  order: 2;
+  order: 1;
   margin: 0;
 }
 
 .footer__bottom > div {
-  order: 1;
+  order: 2;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -2274,6 +2274,11 @@ main > section[id] {
   .footer__bottom {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .footer__bottom {
+    align-items: center;
+    text-align: center;
   }
 
   .footer__top > p {
