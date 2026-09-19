@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added the Bantan Proprietary License
+- Added the Liu Qishuo Proprietary License
 - Added the website license page and footer license entry
 - Added personal copyright and original-content protection details
 - Added detailed project README
