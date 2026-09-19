@@ -15,9 +15,11 @@
 |---|---|
 | <img src="./docs/screenshots/index-desktop.jpg" alt="刘骐硕个人博客首页" width="100%"> | <img src="./docs/screenshots/journal-desktop.jpg" alt="文章与记录" width="100%"> |
 
-| 照片档案 | 内容管理 |
+| 照片档案 | 移动端 |
 |---|---|
-| <img src="./docs/screenshots/photos-desktop.jpg" alt="照片档案" width="100%"> | 使用 `node server.cjs` 启动本地内容管理后台 |
+| <img src="./docs/screenshots/photos-desktop.jpg" alt="照片档案" width="100%"> | <img src="./docs/screenshots/index-mobile.jpg" alt="移动端首页" width="42%"> |
+
+使用 `node server.cjs` 启动本地内容管理后台。
 
 ## 主要功能
 
