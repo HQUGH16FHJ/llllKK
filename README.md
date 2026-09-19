@@ -7,7 +7,7 @@
 
 一个记录文章、照片、影像与日常生活的个人内容网站。项目采用原生 HTML、CSS 和 JavaScript 构建，并提供 Node.js 本地管理后台，用于维护网站内容、照片分组、文章和媒体资源。
 
-[项目预览](#项目预览) · [架构文档](./ARCHITECTURE.md) · [部署文档](./DEPLOYMENT.md) · [设计规范](./docs/DESIGN-SYSTEM.md) · [常见问题](./docs/FAQ.md) · [贡献规范](./CONTRIBUTING.md) · [安全政策](./SECURITY.md) · [使用许可](./LICENSE)
+[项目预览](#项目预览) · [架构文档](./ARCHITECTURE.md) · [部署文档](./DEPLOYMENT.md) · [设计规范](./docs/DESIGN-SYSTEM.md) · [常见问题](./docs/FAQ.md) · [贡献规范](./CONTRIBUTING.md) · [安全政策](./SECURITY.md) · [网站许可证](./license.html) · [许可证原文](./LICENSE)
 
 ## 项目预览
 
@@ -59,9 +59,11 @@ llllKK/
 ├─ index-v2.css         # 首页视觉版本
 ├─ index-v3.css         # 首页增强视觉版本
 ├─ styles.css           # 前台基础样式
+├─ license.html         # 使用许可与版权声明
+├─ license.css          # 许可证页面样式
 ├─ server.cjs           # 本地 Node.js 服务与管理接口
 ├─ start-admin.bat      # Windows 后台启动脚本
-└─ LICENSE              # 绊谈专有许可证
+└─ LICENSE              # 刘骐硕 · 绊谈专有许可证
 ```
 
 ## 本地运行
@@ -132,6 +134,7 @@ node server.cjs
 
 - 允许个人使用、学习参考和小范围分享
 - 禁止商业使用、二次分发、公开发布和移除品牌标识
+- 网站许可证页面：[license.html](./license.html)
 - 具体权利义务以仓库根目录的 [LICENSE](./LICENSE) 为准
 
-Copyright (c) 2026 绊谈 Bantan. All Rights Reserved.
+Copyright (c) 2026 Liu Qishuo · Bantan. All Rights Reserved.

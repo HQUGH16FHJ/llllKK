@@ -5,6 +5,8 @@
 ### Added
 
 - Added the Bantan Proprietary License
+- Added the website license page and footer license entry
+- Added personal copyright and original-content protection details
 - Added detailed project README
 - Added security, contribution, privacy, architecture, deployment, support, governance, and release documentation
 - Added issue templates and repository automation
