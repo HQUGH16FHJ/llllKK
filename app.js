@@ -1655,11 +1655,13 @@ musicTrackSelect?.addEventListener("change", () => {
   loadMusicTrack(Number(musicTrackSelect.value), true);
 });
 
-const savedVolume = Number(localStorage.getItem("siteMusicVolume"));
-audio.volume = Number.isFinite(savedVolume)
-  ? Math.min(Math.max(savedVolume, 0), 1)
-  : 0.82;
+audio.volume = 0.5;
 musicVolume.value = String(audio.volume);
+try {
+  localStorage.setItem("siteMusicVolume", String(audio.volume));
+} catch {
+  // Private browsing can block storage; music playback still works.
+}
 
 musicVolume.addEventListener("input", () => {
   audio.volume = Number(musicVolume.value);
