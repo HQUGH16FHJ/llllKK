@@ -482,6 +482,7 @@ body::before {
   background: rgb(7 10 10 / 94%);
   box-shadow: 0 18px 44px rgb(0 0 0 / 34%);
   backdrop-filter: none;
+  transform: none;
 }
 
 .music-dock__toggle {
